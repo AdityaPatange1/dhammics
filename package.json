@@ -1,0 +1,38 @@
+{
+  "name": "dhammics",
+  "version": "1.0.0",
+  "description": "A minimal, fast, static blogging platform for the Dhamma.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "http-server . -p 4174 -c-1 --cors -s",
+    "start": "npm run dev",
+    "build": "node scripts/build.js",
+    "validate": "node scripts/validate.js",
+    "lint": "npm run lint:js && npm run lint:css && npm run lint:html",
+    "lint:js": "eslint \"assets/js/**/*.js\" \"scripts/**/*.js\"",
+    "lint:css": "stylelint \"assets/css/**/*.css\"",
+    "lint:html": "htmlhint \"*.html\"",
+    "format": "prettier --write \"**/*.{js,css,html,json,md}\"",
+    "check": "npm run validate && npm run lint && npm run build"
+  },
+  "devDependencies": {
+    "eslint": "^9.12.0",
+    "htmlhint": "^1.1.4",
+    "http-server": "^14.1.1",
+    "prettier": "^3.3.3",
+    "stylelint": "^16.9.0",
+    "stylelint-config-standard": "^36.0.1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "dhamma",
+    "buddhism",
+    "blog",
+    "static-site",
+    "github-pages"
+  ],
+  "license": "MIT"
+}

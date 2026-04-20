@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#2f8843" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e1613" media="(prefers-color-scheme: dark)" />
+    <title>Admin · Dhammics</title>
+    <meta name="description" content="Dhammics administrative composer." />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="./assets/images/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://rsms.me" crossorigin />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap"
+    />
+    <link rel="stylesheet" href="./assets/css/main.css" />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('dhammics:theme');
+          if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+        } catch (_) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a class="brand" href="./index.html" aria-label="Dhammics home">
+          <span class="brand-mark" aria-hidden="true"><i data-lucide="leaf"></i></span>
+          Dhammics
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <ul class="nav-links" data-nav-links>
+            <li><a href="./index.html">Essays</a></li>
+            <li><a href="./admin.html" aria-current="page">Admin</a></li>
+          </ul>
+          <div class="nav-actions">
+            <span class="chip outline" style="margin-right: var(--space-2)">
+              <i data-lucide="user" style="width: 14px; height: 14px"></i>
+              <span data-current-user>admin</span>
+            </span>
+            <button
+              class="icon-btn theme-toggle"
+              data-theme-toggle
+              aria-label="Toggle color theme"
+              type="button"
+            >
+              <i data-lucide="moon"></i>
+            </button>
+            <button class="btn btn-ghost" type="button" data-logout>
+              <i data-lucide="log-out"></i> Sign out
+            </button>
+            <button class="icon-btn nav-toggle" data-nav-toggle aria-label="Toggle menu" type="button">
+              <i data-lucide="menu"></i>
+            </button>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main class="admin-shell">
+      <div class="container">
+        <div class="admin-head">
+          <div>
+            <h1>Compose an essay</h1>
+            <p>Write in Markdown. Preview as you go. Export a ready-to-commit file.</p>
+          </div>
+          <div style="display: flex; gap: var(--space-2); flex-wrap: wrap">
+            <button class="btn btn-ghost" type="button" data-clear>
+              <i data-lucide="eraser"></i> Clear
+            </button>
+            <button class="btn btn-secondary" type="button" data-save-draft>
+              <i data-lucide="save"></i> Save draft
+            </button>
+            <button class="btn btn-primary" type="button" data-publish>
+              <i data-lucide="upload"></i> Export & publish
+            </button>
+          </div>
+        </div>
+
+        <p class="admin-info reveal">
+          <i data-lucide="info"></i>
+          <span>
+            Drafts save to this browser only. To publish to the live site, click
+            <strong>Export & publish</strong>, commit the downloaded <code>.md</code> to
+            <code>content/posts/</code>, add the manifest entry to
+            <code>content/posts/manifest.json</code>, and push to GitHub — Pages redeploys
+            automatically.
+          </span>
+        </p>
+
+        <div class="admin-grid" style="margin-top: var(--space-5)">
+          <form id="post-form" class="admin-panel reveal" novalidate>
+            <h2><i data-lucide="pen-line"></i> Essay details</h2>
+            <div class="field">
+              <label for="title">Title</label>
+              <input
+                class="input"
+                type="text"
+                id="title"
+                name="title"
+                placeholder="The Art of Mindful Breathing"
+                required
+              />
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="slug">Slug</label>
+                <input
+                  class="input"
+                  type="text"
+                  id="slug"
+                  name="slug"
+                  placeholder="the-art-of-mindful-breathing"
+                  required
+                />
+                <span class="form-help">URL path. Auto-derived from title.</span>
+              </div>
+              <div class="field">
+                <label for="date">Date</label>
+                <input class="input" type="date" id="date" name="date" />
+              </div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="author">Author</label>
+                <input
+                  class="input"
+                  type="text"
+                  id="author"
+                  name="author"
+                  placeholder="Dhammics"
+                  value="Dhammics"
+                />
+              </div>
+              <div class="field">
+                <label for="tags">Tags</label>
+                <input
+                  class="input"
+                  type="text"
+                  id="tags"
+                  name="tags"
+                  placeholder="Meditation, Practice"
+                />
+                <span class="form-help">Comma-separated.</span>
+              </div>
+            </div>
+            <div class="field">
+              <label for="cover">Cover image URL</label>
+              <input
+                class="input"
+                type="url"
+                id="cover"
+                name="cover"
+                placeholder="https://images.unsplash.com/photo-... (placeholder)"
+              />
+              <span class="form-help">Pre-hosted image URL — external links only.</span>
+            </div>
+            <div class="field">
+              <label for="description">Description</label>
+              <textarea
+                class="textarea"
+                id="description"
+                name="description"
+                rows="2"
+                placeholder="A short summary shown on listings and social shares."
+                style="min-height: 80px"
+              ></textarea>
+            </div>
+
+            <div style="margin-top: var(--space-5)">
+              <div class="editor-toolbar">
+                <div>
+                  <label for="body" style="font-size: var(--fs-sm); font-weight: 500">Body</label>
+                  <span class="form-help"> · Markdown with image links supported</span>
+                </div>
+                <div class="editor-tabs" data-editor-tabs role="tablist">
+                  <button type="button" data-tab="write" aria-selected="true" role="tab">
+                    Write
+                  </button>
+                  <button type="button" data-tab="preview" aria-selected="false" role="tab">
+                    Preview
+                  </button>
+                </div>
+              </div>
+              <div class="editor-body">
+                <div data-tab-panel="write">
+                  <textarea
+                    class="textarea editor-textarea"
+                    id="body"
+                    name="body"
+                    placeholder="# Begin with the breath
+
+The mind settles when the breath is watched gently..."
+                  ></textarea>
+                </div>
+                <div data-tab-panel="preview" hidden>
+                  <div class="editor-preview post-content" data-preview></div>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <aside class="admin-panel reveal">
+            <h2><i data-lucide="files"></i> Local drafts</h2>
+            <p class="form-help" style="margin-bottom: var(--space-3)">
+              Drafts live in this browser. They preview on the homepage with a "draft" flag.
+            </p>
+            <ul class="drafts-list" data-drafts></ul>
+          </aside>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p class="footer-meta">Dhammics admin · Static publishing workflow</p>
+      </div>
+    </footer>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script type="module" src="./assets/js/main.js"></script>
+    <script type="module" src="./assets/js/admin.js"></script>
+  </body>
+</html>

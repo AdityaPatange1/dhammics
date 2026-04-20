@@ -1,0 +1,161 @@
+/* Design tokens — light green + white palette with full dark mode support. */
+
+:root {
+  color-scheme: light dark;
+
+  /* Brand palette (light green) */
+  --brand-50: #f1faf3;
+  --brand-100: #dff3e2;
+  --brand-200: #bde8c3;
+  --brand-300: #91d69d;
+  --brand-400: #63be74;
+  --brand-500: #41a555;
+  --brand-600: #2f8843;
+  --brand-700: #266c37;
+  --brand-800: #21562f;
+  --brand-900: #1c4828;
+
+  /* Surfaces (light mode) */
+  --bg: #ffffff;
+  --bg-subtle: #f7fbf8;
+  --bg-elevated: #ffffff;
+  --surface: #ffffff;
+  --surface-alt: #f1faf3;
+  --border: #e3eee6;
+  --border-strong: #c9ddce;
+
+  /* Text */
+  --text: #14241a;
+  --text-muted: #556b5e;
+  --text-soft: #7a8f84;
+  --text-inverse: #ffffff;
+
+  /* Brand roles */
+  --accent: var(--brand-600);
+  --accent-hover: var(--brand-700);
+  --accent-soft: var(--brand-100);
+  --accent-soft-hover: var(--brand-200);
+  --focus-ring: color-mix(in srgb, var(--brand-500) 45%, transparent);
+
+  /* Status */
+  --danger: #c0392b;
+  --warning: #b7791f;
+  --success: var(--brand-600);
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgb(20 36 26 / 0.04);
+  --shadow-sm: 0 2px 6px rgb(20 36 26 / 0.06);
+  --shadow-md: 0 8px 20px rgb(20 36 26 / 0.08);
+  --shadow-lg: 0 20px 40px rgb(20 36 26 / 0.12);
+
+  /* Radii */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 28px;
+  --radius-full: 999px;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  /* Typography */
+  --font-sans:
+    'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, 'Helvetica Neue', arial,
+    sans-serif;
+  --font-serif: 'Source Serif 4', 'Iowan Old Style', georgia, 'Times New Roman', serif;
+  --font-mono: ui-monospace, 'SF Mono', menlo, monaco, 'Cascadia Mono', monospace;
+
+  --fs-xs: 0.78rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.3rem;
+  --fs-2xl: 1.65rem;
+  --fs-3xl: 2.1rem;
+  --fs-4xl: 2.75rem;
+  --fs-5xl: 3.5rem;
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.35;
+  --lh-normal: 1.55;
+  --lh-relaxed: 1.75;
+
+  /* Layout */
+  --container: 1180px;
+  --container-narrow: 780px;
+  --header-h: 68px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.2, 1);
+  --dur-fast: 140ms;
+  --dur-med: 240ms;
+  --dur-slow: 420ms;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #0e1613;
+  --bg-subtle: #121d19;
+  --bg-elevated: #16231e;
+  --surface: #162320;
+  --surface-alt: #1b2c26;
+  --border: #243a31;
+  --border-strong: #2f4c40;
+
+  --text: #e8f1eb;
+  --text-muted: #a8bdb1;
+  --text-soft: #7e958a;
+  --text-inverse: #0e1613;
+
+  --accent: var(--brand-400);
+  --accent-hover: var(--brand-300);
+  --accent-soft: #1c3326;
+  --accent-soft-hover: #234334;
+  --focus-ring: color-mix(in srgb, var(--brand-300) 45%, transparent);
+
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.25);
+  --shadow-sm: 0 2px 6px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 10px 24px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 24px 48px rgb(0 0 0 / 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    color-scheme: dark;
+
+    --bg: #0e1613;
+    --bg-subtle: #121d19;
+    --bg-elevated: #16231e;
+    --surface: #162320;
+    --surface-alt: #1b2c26;
+    --border: #243a31;
+    --border-strong: #2f4c40;
+
+    --text: #e8f1eb;
+    --text-muted: #a8bdb1;
+    --text-soft: #7e958a;
+    --text-inverse: #0e1613;
+
+    --accent: var(--brand-400);
+    --accent-hover: var(--brand-300);
+    --accent-soft: #1c3326;
+    --accent-soft-hover: #234334;
+    --focus-ring: color-mix(in srgb, var(--brand-300) 45%, transparent);
+
+    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.25);
+    --shadow-sm: 0 2px 6px rgb(0 0 0 / 0.3);
+    --shadow-md: 0 10px 24px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 24px 48px rgb(0 0 0 / 0.5);
+  }
+}

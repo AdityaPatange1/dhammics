@@ -1,0 +1,118 @@
+{
+  "$schema": "./manifest.schema.json",
+  "generatedAt": "2026-04-20",
+  "posts": [
+    {
+      "slug": "four-noble-truths",
+      "title": "The Four Noble Truths: A Map of the Path",
+      "description": "The Buddha's first teaching remains a quietly revolutionary diagnosis of human experience — and a practical map of the way out.",
+      "date": "2026-04-14",
+      "author": "Dhammics",
+      "tags": [
+        "Foundations",
+        "Dhamma"
+      ],
+      "cover": "https://images.unsplash.com/photo-1476820865390-c52aeebb9891?auto=format&fit=crop&w=1600&q=80",
+      "readingTime": 7,
+      "file": "./content/posts/four-noble-truths.md"
+    },
+    {
+      "slug": "eightfold-path",
+      "title": "Walking the Eightfold Path",
+      "description": "The Eightfold Path is not eight steps taken in sequence, but eight facets of a life that is no longer at war with itself.",
+      "date": "2026-04-10",
+      "author": "Dhammics",
+      "tags": [
+        "Foundations",
+        "Practice"
+      ],
+      "cover": "https://images.unsplash.com/photo-1501696461415-6bd6660c6742?auto=format&fit=crop&w=1600&q=80",
+      "readingTime": 8,
+      "file": "./content/posts/eightfold-path.md"
+    },
+    {
+      "slug": "mindful-breathing",
+      "title": "The Art of Mindful Breathing",
+      "description": "Ānāpānasati — mindfulness of the breath — is deceptively simple. A gentle practice that, over time, quietly rearranges everything.",
+      "date": "2026-04-06",
+      "author": "Dhammics",
+      "tags": [
+        "Meditation",
+        "Practice"
+      ],
+      "cover": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1600&q=80",
+      "readingTime": 6,
+      "file": "./content/posts/mindful-breathing.md"
+    },
+    {
+      "slug": "impermanence-anicca",
+      "title": "Anicca: The Quiet Gift of Impermanence",
+      "description": "Everything that arises passes away. The Buddha returned to this observation so often that it deserves our own long, slow look.",
+      "date": "2026-03-28",
+      "author": "Dhammics",
+      "tags": [
+        "Dhamma",
+        "Reflection"
+      ],
+      "cover": "https://images.unsplash.com/photo-1495567720989-cebdbdd97913?auto=format&fit=crop&w=1600&q=80",
+      "readingTime": 6,
+      "file": "./content/posts/impermanence-anicca.md"
+    },
+    {
+      "slug": "metta-loving-kindness",
+      "title": "Metta: The Practice of Boundless Friendliness",
+      "description": "Metta is not sentimentality. It is the steady training of a heart that can meet any being without closing.",
+      "date": "2026-03-20",
+      "author": "Dhammics",
+      "tags": [
+        "Practice",
+        "Heart"
+      ],
+      "cover": "https://images.unsplash.com/photo-1491002052546-bf38f186af56?auto=format&fit=crop&w=1600&q=80",
+      "readingTime": 7,
+      "file": "./content/posts/metta-loving-kindness.md"
+    },
+    {
+      "slug": "walking-meditation",
+      "title": "Walking Meditation: Dhamma in Motion",
+      "description": "Walking meditation is the quiet cousin of sitting. For many practitioners, it is where insight first lands.",
+      "date": "2026-03-14",
+      "author": "Dhammics",
+      "tags": [
+        "Meditation",
+        "Practice"
+      ],
+      "cover": "https://images.unsplash.com/photo-1528716321680-815a8cdb8cbe?auto=format&fit=crop&w=1600&q=80",
+      "readingTime": 5,
+      "file": "./content/posts/walking-meditation.md"
+    },
+    {
+      "slug": "five-precepts",
+      "title": "The Five Precepts as Training, Not Commandments",
+      "description": "The precepts are not a moral code imposed from above. They are a training — a laboratory for seeing what the mind does when the door is closed to certain habits.",
+      "date": "2026-03-05",
+      "author": "Dhammics",
+      "tags": [
+        "Ethics",
+        "Foundations"
+      ],
+      "cover": "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1600&q=80",
+      "readingTime": 6,
+      "file": "./content/posts/five-precepts.md"
+    },
+    {
+      "slug": "dependent-origination",
+      "title": "Dependent Origination: How Suffering Assembles Itself",
+      "description": "Paticca-samuppada, the Buddha's teaching of interdependent arising, is often presented as a dense twelve-link formula. At its heart is a simple, liberating insight.",
+      "date": "2026-02-24",
+      "author": "Dhammics",
+      "tags": [
+        "Dhamma",
+        "Insight"
+      ],
+      "cover": "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1600&q=80",
+      "readingTime": 9,
+      "file": "./content/posts/dependent-origination.md"
+    }
+  ]
+}

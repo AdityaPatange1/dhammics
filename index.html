@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#2f8843" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e1613" media="(prefers-color-scheme: dark)" />
+    <title>Dhammics — Essays on the Dhamma</title>
+    <meta
+      name="description"
+      content="Dhammics is a minimal, contemplative blog exploring the teachings of the Dhamma — mindfulness, compassion, and the path to freedom."
+    />
+    <link rel="icon" href="./assets/images/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://rsms.me" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap"
+    />
+    <link rel="stylesheet" href="./assets/css/main.css" />
+    <script>
+      // Pre-apply stored theme to avoid flash of incorrect color scheme.
+      (function () {
+        try {
+          var t = localStorage.getItem('dhammics:theme');
+          if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+        } catch (_) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="container">
+        <a class="brand" href="./index.html" aria-label="Dhammics home">
+          <span class="brand-mark" aria-hidden="true"><i data-lucide="leaf"></i></span>
+          Dhammics
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <ul class="nav-links" data-nav-links>
+            <li><a href="./index.html">Essays</a></li>
+            <li><a href="./index.html#about">About</a></li>
+            <li><a href="./admin.html" data-auth-only hidden>Admin</a></li>
+          </ul>
+          <div class="nav-actions">
+            <button
+              class="icon-btn theme-toggle"
+              data-theme-toggle
+              aria-label="Toggle color theme"
+              type="button"
+            >
+              <i data-lucide="moon"></i>
+            </button>
+            <a class="btn btn-ghost" href="./login.html" data-guest-only>
+              <i data-lucide="log-in"></i> Sign in
+            </a>
+            <a class="btn btn-secondary" href="./admin.html" data-auth-only hidden>
+              <i data-lucide="pen-line"></i> Write
+            </a>
+            <button class="icon-btn nav-toggle" data-nav-toggle aria-label="Toggle menu" type="button">
+              <i data-lucide="menu"></i>
+            </button>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero">
+        <div class="container">
+          <span class="hero-eyebrow reveal">
+            <i data-lucide="sparkles" style="width: 14px; height: 14px"></i>
+            A quiet library for the Dhamma
+          </span>
+          <h1 class="hero-title reveal">Still mind. Clear seeing. One breath at a time.</h1>
+          <p class="hero-lede reveal">
+            Dhammics is a collection of essays and practice notes on the path of awakening —
+            mindfulness, ethics, and wisdom, drawn from the Theravada tradition and offered
+            freely as an invitation to pause, reflect, and begin again.
+          </p>
+          <div class="hero-actions reveal">
+            <a class="btn btn-primary" href="#essays">
+              Start reading <i data-lucide="arrow-right"></i>
+            </a>
+            <a class="btn btn-ghost" href="#about">
+              <i data-lucide="book-open-text"></i> About this project
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="essays">
+        <div class="container">
+          <div class="section-head reveal">
+            <div>
+              <h2 class="section-title">Featured essay</h2>
+              <p class="section-desc">The latest reflection, freshly published.</p>
+            </div>
+          </div>
+          <div class="card reveal" style="padding: var(--space-6)" data-hero-post></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="section-head reveal">
+            <div>
+              <h2 class="section-title">All essays</h2>
+              <p class="section-desc">
+                Browse by theme. Every essay is free to read and share.
+              </p>
+            </div>
+            <div
+              class="reveal"
+              data-tag-bar
+              style="display: flex; gap: var(--space-2); flex-wrap: wrap"
+            ></div>
+          </div>
+          <div class="post-grid" data-post-grid></div>
+        </div>
+      </section>
+
+      <section class="section" id="about">
+        <div class="container container-narrow reveal">
+          <h2 class="section-title" style="text-align: center">About Dhammics</h2>
+          <p
+            class="section-desc"
+            style="text-align: center; margin: var(--space-4) auto; font-size: var(--fs-lg)"
+          >
+            Dhammics is a small, frontend-first publication that treats reading like
+            sitting: uncluttered, slow, and attentive. No ads, no trackers, no paywalls —
+            just the Dhamma, offered in the spirit of dana.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <a class="brand" href="./index.html">
+          <span class="brand-mark" aria-hidden="true"><i data-lucide="leaf"></i></span>
+          Dhammics
+        </a>
+        <p class="footer-meta">
+          Offered in the spirit of dana · Built with care for contemplative reading ·
+          <a href="./login.html" data-guest-only>Sign in</a>
+          <a href="./admin.html" data-auth-only hidden>Admin</a>
+        </p>
+      </div>
+    </footer>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script type="module" src="./assets/js/main.js"></script>
+    <script type="module" src="./assets/js/home.js"></script>
+  </body>
+</html>

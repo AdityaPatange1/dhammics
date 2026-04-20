@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#2f8843" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e1613" media="(prefers-color-scheme: dark)" />
+    <title>Sign in · Dhammics</title>
+    <meta name="description" content="Sign in to the Dhammics admin panel." />
+    <link rel="icon" href="./assets/images/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://rsms.me" crossorigin />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap"
+    />
+    <link rel="stylesheet" href="./assets/css/main.css" />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('dhammics:theme');
+          if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+        } catch (_) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a class="brand" href="./index.html" aria-label="Dhammics home">
+          <span class="brand-mark" aria-hidden="true"><i data-lucide="leaf"></i></span>
+          Dhammics
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <div class="nav-actions">
+            <button
+              class="icon-btn theme-toggle"
+              data-theme-toggle
+              aria-label="Toggle color theme"
+              type="button"
+            >
+              <i data-lucide="moon"></i>
+            </button>
+            <a class="btn btn-ghost" href="./index.html">
+              <i data-lucide="arrow-left"></i> Back to site
+            </a>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main class="auth-shell">
+      <div class="auth-card">
+        <header>
+          <span class="brand-mark" aria-hidden="true"><i data-lucide="leaf"></i></span>
+          <h1>Welcome back</h1>
+          <p>Sign in to write and manage Dhammics essays.</p>
+        </header>
+        <form id="login-form" novalidate>
+          <div class="field">
+            <label for="username">Username</label>
+            <input
+              class="input"
+              type="text"
+              id="username"
+              name="username"
+              autocomplete="username"
+              required
+              placeholder="admin"
+            />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input
+              class="input"
+              type="password"
+              id="password"
+              name="password"
+              autocomplete="current-password"
+              required
+              placeholder="••••••••"
+            />
+          </div>
+          <label
+            class="form-help"
+            style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer"
+          >
+            <input type="checkbox" name="remember" />
+            Keep me signed in on this device
+          </label>
+          <p class="form-error" id="login-error" role="alert" aria-live="polite"></p>
+          <button class="btn btn-primary" type="submit" style="justify-content: center">
+            <i data-lucide="log-in"></i> Sign in
+          </button>
+          <p class="auth-hint">
+            <i data-lucide="info" style="width: 14px; height: 14px; vertical-align: -2px"></i>
+            Demo credentials: <code>admin</code> / <code>dhamma123</code>. Authentication is
+            client-side only and intended for a static GitHub Pages deployment. Change the
+            default by setting <code>dhammics:creds</code> in localStorage.
+          </p>
+        </form>
+      </div>
+    </main>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script type="module" src="./assets/js/main.js"></script>
+    <script type="module" src="./assets/js/login.js"></script>
+  </body>
+</html>
