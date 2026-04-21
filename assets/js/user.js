@@ -77,23 +77,52 @@ const bindAuthForms = () => {
 };
 
 const feedRow = (post, state, interactions) => `
-  <li class="post-manage-item">
-    <div>
-      <strong><a href="./post.html?slug=${encodeURIComponent(post.slug)}">${escapeHTML(post.title)}</a></strong>
-      <p class="muted">${formatDate(post.date)} · ${escapeHTML(post.description || '')}</p>
+  <li class="post-manage-item premium-post-row">
+    <div class="premium-post-top">
+      <div>
+        <strong><a href="./post.html?slug=${encodeURIComponent(post.slug)}">${escapeHTML(post.title)}</a></strong>
+        <p class="muted">${escapeHTML(post.description || '')}</p>
+      </div>
+      <div class="premium-post-meta">
+        <span class="chip outline"><i data-lucide="calendar"></i> ${formatDate(post.date)}</span>
+        <span class="chip outline"><i data-lucide="bar-chart-3"></i> ${interactions.ratingAvg.toFixed(1)} avg</span>
+      </div>
     </div>
     <div class="post-manage-actions">
-      <button class="btn btn-ghost ${state.liked.includes(post.slug) ? 'is-active' : ''}" data-toggle="likes" data-slug="${escapeHTML(post.slug)}" type="button">Like (${interactions.likes})</button>
-      <button class="btn btn-ghost ${state.starred.includes(post.slug) ? 'is-active' : ''}" title="Star saves this article for revival and re-reading later." data-toggle="stars" data-slug="${escapeHTML(post.slug)}" type="button">Star (${interactions.stars})</button>
-      <button class="btn btn-ghost ${state.favorited.includes(post.slug) ? 'is-active' : ''}" title="Favorite reranks this article higher in your feed." data-toggle="favorites" data-slug="${escapeHTML(post.slug)}" type="button">Favorite (${interactions.favorites})</button>
-      <select class="select rating-mini" data-rate="${escapeHTML(post.slug)}">
-        <option value="0">Rate</option>
+      <button class="btn btn-ghost ${state.liked.includes(post.slug) ? 'is-active' : ''}" data-toggle="likes" data-slug="${escapeHTML(post.slug)}" type="button">
+        <i data-lucide="thumbs-up"></i> Like (${interactions.likes})
+      </button>
+      <button class="btn btn-ghost ${state.starred.includes(post.slug) ? 'is-active' : ''}" title="Star saves this article for revival and re-reading later." data-toggle="stars" data-slug="${escapeHTML(post.slug)}" type="button">
+        <i data-lucide="star"></i> Star (${interactions.stars})
+      </button>
+      <button class="btn btn-ghost ${state.favorited.includes(post.slug) ? 'is-active' : ''}" title="Favorite reranks this article higher in your feed." data-toggle="favorites" data-slug="${escapeHTML(post.slug)}" type="button">
+        <i data-lucide="heart"></i> Favorite (${interactions.favorites})
+      </button>
+      <div class="rating-stars" role="group" aria-label="Rate ${escapeHTML(post.title)}">
         ${[1, 2, 3, 4, 5]
-          .map((n) => `<option value="${n}" ${state.ratings[post.slug] === n ? 'selected' : ''}>${n}</option>`)
+          .map(
+            (n) => `
+          <button
+            class="rating-star ${state.ratings[post.slug] >= n ? 'is-filled' : ''}"
+            type="button"
+            data-rate-value="${n}"
+            data-rate="${escapeHTML(post.slug)}"
+            aria-label="Rate ${n} out of 5"
+            title="Rate ${n}/5"
+          >
+            <i data-lucide="star"></i>
+          </button>
+        `
+          )
           .join('')}
-      </select>
-      <input class="input comment-mini" data-comment-input="${escapeHTML(post.slug)}" placeholder="Quick comment..." />
-      <button class="btn btn-secondary" data-comment-submit="${escapeHTML(post.slug)}" type="button">Post</button>
+      </div>
+      <span class="muted rating-caption">${state.ratings[post.slug] ? `You rated ${state.ratings[post.slug]}/5` : 'Not rated yet'}</span>
+    </div>
+    <div class="premium-post-comment">
+      <input class="input comment-mini" data-comment-input="${escapeHTML(post.slug)}" placeholder="Add thoughtful annotation or note..." />
+      <button class="btn btn-secondary" data-comment-submit="${escapeHTML(post.slug)}" type="button">
+        <i data-lucide="message-circle-plus"></i> Post
+      </button>
     </div>
   </li>
 `;
@@ -106,10 +135,12 @@ const bindInteractions = (root) => {
       await renderUserPanel();
     })
   );
-  root.querySelectorAll('[data-rate]').forEach((select) =>
-    select.addEventListener('change', async () => {
-      if (!Number(select.value)) return;
-      const res = await dbApi.setRating(select.dataset.rate, Number(select.value));
+  root.querySelectorAll('[data-rate-value]').forEach((button) =>
+    button.addEventListener('click', async () => {
+      const value = Number(button.dataset.rateValue);
+      const slug = button.dataset.rate;
+      if (!value || !slug) return;
+      const res = await dbApi.setRating(slug, value);
       if (!res.ok) return toast(res.error, { type: 'error' });
       await renderUserPanel();
     })

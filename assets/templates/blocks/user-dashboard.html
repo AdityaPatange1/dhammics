@@ -1,24 +1,34 @@
 <section class="user-dashboard" data-user-shell hidden>
-  <aside class="dashboard-sidebar">
-    <div class="dashboard-brand">
-      <span class="chip"><i data-lucide="layout-dashboard"></i> User dashboard</span>
+  <aside class="dashboard-sidebar dashboard-surface">
+    <div class="dashboard-sidebar-head">
+      <span class="chip"><i data-lucide="sparkles"></i> Premium workspace</span>
       <h2>Welcome, <span data-user-name></span></h2>
-      <p class="muted">Organize reading, engagement, and writing across dedicated screens.</p>
+      <p class="muted">A focused control center for reading, ranking, and publishing workflows.</p>
     </div>
+    <p class="dashboard-nav-group-title">Navigate</p>
     <nav class="dashboard-nav" aria-label="User screens">
       <button type="button" class="dashboard-nav-btn" data-screen-btn="feed" aria-selected="true">
-        <i data-lucide="newspaper"></i> Feed
+        <i data-lucide="layout-dashboard"></i>
+        <span>Feed</span>
       </button>
       <button type="button" class="dashboard-nav-btn" data-screen-btn="reading">
-        <i data-lucide="bookmark"></i> Reading List
+        <i data-lucide="library"></i>
+        <span>Reading List</span>
       </button>
       <button type="button" class="dashboard-nav-btn" data-screen-btn="favorites">
-        <i data-lucide="heart"></i> Favorites
+        <i data-lucide="gem"></i>
+        <span>Favorites</span>
       </button>
       <button type="button" class="dashboard-nav-btn" data-screen-btn="write">
-        <i data-lucide="pen-square"></i> Write Post
+        <i data-lucide="square-pen"></i>
+        <span>Write Post</span>
       </button>
     </nav>
+    <div class="dashboard-annotation">
+      <strong>Annotation</strong>
+      <p><i data-lucide="star"></i> Star saves for revival and intentional re-reading.</p>
+      <p><i data-lucide="heart"></i> Favorite reranks and pushes posts up in your feed.</p>
+    </div>
     <button class="btn btn-ghost" type="button" data-panel-logout>
       <i data-lucide="log-out"></i> Sign out
     </button>
@@ -27,28 +37,36 @@
   <div class="dashboard-main">
     <section class="dashboard-stats">
       <article class="stat-card">
+        <i data-lucide="file-stack" class="stat-icon"></i>
         <span class="muted">Total posts</span>
         <strong data-stat-total-posts>0</strong>
       </article>
       <article class="stat-card">
+        <i data-lucide="bookmark-check" class="stat-icon"></i>
         <span class="muted">Starred</span>
         <strong data-stat-starred>0</strong>
       </article>
       <article class="stat-card">
+        <i data-lucide="trending-up" class="stat-icon"></i>
         <span class="muted">Favorites</span>
         <strong data-stat-favorites>0</strong>
       </article>
       <article class="stat-card">
+        <i data-lucide="pen-square" class="stat-icon"></i>
         <span class="muted">Local posts</span>
         <strong data-stat-local-posts>0</strong>
       </article>
     </section>
 
-    <section class="screen-panel" data-screen-panel="feed">
+    <section class="screen-panel dashboard-surface" data-screen-panel="feed">
       <div class="screen-head">
         <h1>Feed</h1>
-        <p class="muted">Engage with recent posts: like, star, favorite, rate, and comment.</p>
+        <p class="muted">Engage with recent posts using quality signals and discussion notes.</p>
       </div>
+      <p class="screen-note">
+        <i data-lucide="info"></i>
+        Use stars for mindful re-reading and favorites to push high-value posts up the feed ranking.
+      </p>
       <ul class="post-manage-list" data-feed-list></ul>
     </section>
 
@@ -57,11 +75,11 @@
         <h1>Reading List</h1>
         <p class="muted">Starred posts are for revival and re-reading later.</p>
       </div>
-      <article class="admin-panel">
+      <article class="admin-panel dashboard-surface">
         <h2><i data-lucide="bookmark"></i> Starred Posts</h2>
         <ul class="drafts-list" data-reading-list></ul>
       </article>
-      <article class="admin-panel" style="margin-top: var(--space-4)">
+      <article class="admin-panel dashboard-surface" style="margin-top: var(--space-4)">
         <h2><i data-lucide="message-circle"></i> Your latest comments</h2>
         <ul class="drafts-list" data-reading-comments></ul>
       </article>
@@ -72,11 +90,11 @@
         <h1>Favorites</h1>
         <p class="muted">Favorites rerank and push posts up in your personalized feed.</p>
       </div>
-      <article class="admin-panel">
+      <article class="admin-panel dashboard-surface">
         <h2><i data-lucide="heart"></i> Favorited posts</h2>
         <ul class="drafts-list" data-favorites-list></ul>
       </article>
-      <article class="admin-panel" style="margin-top: var(--space-4)">
+      <article class="admin-panel dashboard-surface" style="margin-top: var(--space-4)">
         <h2><i data-lucide="arrow-up-wide-narrow"></i> Reranked preview</h2>
         <ul class="drafts-list" data-reranked-list></ul>
       </article>
@@ -90,7 +108,7 @@
         </p>
       </div>
       <div class="admin-grid">
-        <article class="admin-panel">
+        <article class="admin-panel dashboard-surface">
           <form id="composer-form">
             <div class="field">
               <label for="title">Title</label>
@@ -142,7 +160,7 @@
           </form>
         </article>
 
-        <aside class="admin-panel">
+        <aside class="admin-panel dashboard-surface">
           <h2><i data-lucide="files"></i> Your local posts</h2>
           <ul class="drafts-list" data-local-posts></ul>
         </aside>

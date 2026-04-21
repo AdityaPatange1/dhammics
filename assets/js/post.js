@@ -142,16 +142,27 @@ const renderEngagement = async (post) => {
   `;
 
   rating.innerHTML = `
-    <label for="rating-select" class="form-help">Your rating</label>
+    <label class="form-help">Your rating</label>
     <div style="display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap">
-      <select id="rating-select" class="select" ${authed ? '' : 'disabled'}>
-        <option value="0">Rate this post…</option>
-        <option value="1" ${mine.rating === 1 ? 'selected' : ''}>1</option>
-        <option value="2" ${mine.rating === 2 ? 'selected' : ''}>2</option>
-        <option value="3" ${mine.rating === 3 ? 'selected' : ''}>3</option>
-        <option value="4" ${mine.rating === 4 ? 'selected' : ''}>4</option>
-        <option value="5" ${mine.rating === 5 ? 'selected' : ''}>5</option>
-      </select>
+      <div class="rating-stars ${authed ? '' : 'is-disabled'}" role="group" aria-label="Rate this post">
+        ${[1, 2, 3, 4, 5]
+          .map(
+            (n) => `
+          <button
+            class="rating-star ${mine.rating >= n ? 'is-filled' : ''}"
+            data-rating-value="${n}"
+            type="button"
+            ${authed ? '' : 'disabled'}
+            aria-label="Rate ${n} out of 5"
+            title="Rate ${n}/5"
+          >
+            <i data-lucide="star"></i>
+          </button>
+        `
+          )
+          .join('')}
+      </div>
+      <span class="muted rating-caption">${mine.rating ? `Your rating: ${mine.rating}/5` : 'Not rated yet'}</span>
       <span class="muted">Average: ${stats.ratingAvg ? stats.ratingAvg.toFixed(1) : '0.0'} (${stats.ratingsCount} ratings)</span>
     </div>
   `;
@@ -197,13 +208,15 @@ const renderEngagement = async (post) => {
     });
   });
 
-  $('#rating-select', root)?.addEventListener('change', async (event) => {
-    const value = Number(event.target.value);
-    if (!value) return;
-    const res = await dbApi.setRating(post.slug, value);
-    if (!res.ok) return toast(res.error, { type: 'error' });
-    await renderEngagement(post);
-    document.dispatchEvent(new CustomEvent('dhammics:rendered'));
+  root.querySelectorAll('[data-rating-value]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const value = Number(button.dataset.ratingValue);
+      if (!value) return;
+      const res = await dbApi.setRating(post.slug, value);
+      if (!res.ok) return toast(res.error, { type: 'error' });
+      await renderEngagement(post);
+      document.dispatchEvent(new CustomEvent('dhammics:rendered'));
+    });
   });
 
   $('[data-comment-form]', root)?.addEventListener('submit', async (event) => {

@@ -69,9 +69,11 @@
 
   /* Typography */
   --font-sans:
-    'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, 'Helvetica Neue', arial,
+    'Lato', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, 'Helvetica Neue', arial,
     sans-serif;
-  --font-serif: 'Source Serif 4', 'Iowan Old Style', georgia, 'Times New Roman', serif;
+  --font-serif:
+    'Lato', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, 'Helvetica Neue', arial,
+    sans-serif;
   --font-mono: ui-monospace, 'SF Mono', menlo, monaco, 'Cascadia Mono', monospace;
 
   --fs-xs: 0.78rem;
