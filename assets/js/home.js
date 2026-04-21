@@ -13,6 +13,7 @@ const postCard = (post, i) => `
     <div class="post-body">
       <div class="post-meta">
         ${post.tags[0] ? `<span class="chip">${escapeHTML(post.tags[0])}</span>` : ''}
+        ${post.local ? '<span class="chip outline">Local</span>' : ''}
         <span>${formatDate(post.date)}</span>
         <span aria-hidden="true">•</span>
         <span>${post.readingTime || 5} min read</span>
@@ -89,7 +90,7 @@ const init = async () => {
   const grid = $('[data-post-grid]');
   if (!grid) return;
 
-  allPosts = await listPosts({ includeDrafts: true });
+  allPosts = await listPosts({ includeLocal: true });
 
   if (allPosts.length === 0) {
     grid.innerHTML = '<div class="empty">No posts yet. Check back soon.</div>';

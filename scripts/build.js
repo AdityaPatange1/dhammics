@@ -84,6 +84,8 @@ const writeSitemap = async (posts, targetDir) => {
   const urls = [
     `${SITE_URL}/`,
     `${SITE_URL}/index.html`,
+    `${SITE_URL}/feed.html`,
+    `${SITE_URL}/user.html`,
     ...posts.map((p) => `${SITE_URL}/post.html?slug=${encodeURIComponent(p.slug)}`),
   ];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

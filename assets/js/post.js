@@ -1,13 +1,20 @@
 /**
- * Post page — reads ?slug=… and renders the markdown content.
+ * Post page — renders article + localStorage interactions.
  */
 
 import { getPost, listPosts } from './posts.js';
 import { renderMarkdown } from './markdown.js';
-import { $, formatDate, escapeHTML, readingTime } from './utils.js';
+import { isAuthenticated } from './auth.js';
+import { dbApi } from './localdb.js';
+import { $, formatDate, formatDateTime, escapeHTML, readingTime, sanitizeHTML, toast } from './utils.js';
 
 const params = new URLSearchParams(location.search);
 const slug = params.get('slug');
+
+const renderBody = (post) => {
+  if (post.contentType === 'html') return sanitizeHTML(post.bodyHtml || post.body || '');
+  return renderMarkdown(post.body || '');
+};
 
 const renderNotFound = (reason = '') => {
   const shell = $('[data-post-shell]');
@@ -31,7 +38,7 @@ const renderNotFound = (reason = '') => {
 const renderPost = async (post) => {
   const shell = $('[data-post-shell]');
   if (!shell) return;
-  const html = renderMarkdown(post.body || '');
+  const html = renderBody(post);
   const minutes = post.readingTime || readingTime(post.body || '');
 
   document.title = `${post.title} · Dhammics`;
@@ -43,7 +50,7 @@ const renderPost = async (post) => {
         <a href="./index.html" class="btn btn-ghost" style="margin-bottom: var(--space-5)">
           <i data-lucide="arrow-left"></i> All essays
         </a>
-        ${post.draft ? '<span class="chip" style="background: color-mix(in srgb, var(--warning) 20%, transparent); color: var(--warning)">Draft (local)</span>' : ''}
+        ${post.local ? '<span class="chip" style="background: color-mix(in srgb, var(--warning) 20%, transparent); color: var(--warning)">Local user post</span>' : ''}
         ${post.tags[0] ? `<span class="chip">${escapeHTML(post.tags[0])}</span>` : ''}
         <h1>${escapeHTML(post.title)}</h1>
         <div class="post-meta">
@@ -61,11 +68,17 @@ const renderPost = async (post) => {
     <article class="post-article">
       <div class="container container-narrow">
         <div class="post-content">${html}</div>
+        <section class="engagement-panel" data-engagement-panel>
+          <div class="engagement-actions" data-engagement-actions></div>
+          <div class="engagement-rate" data-engagement-rate></div>
+          <div class="engagement-comments" data-engagement-comments></div>
+        </section>
         <div class="post-nav" data-post-nav></div>
       </div>
     </article>
   `;
 
+  await renderEngagement(post);
   await renderPostNav(post);
   document.dispatchEvent(new CustomEvent('dhammics:rendered'));
 };
@@ -73,7 +86,7 @@ const renderPost = async (post) => {
 const renderPostNav = async (current) => {
   const nav = $('[data-post-nav]');
   if (!nav) return;
-  const all = await listPosts({ includeDrafts: false });
+  const all = await listPosts({ includeLocal: true });
   const idx = all.findIndex((p) => p.slug === current.slug);
   const prev = idx >= 0 ? all[idx + 1] : null;
   const next = idx > 0 ? all[idx - 1] : null;
@@ -96,6 +109,113 @@ const renderPostNav = async (current) => {
         : '<span></span>'
     }
   `;
+};
+
+const renderEngagement = async (post) => {
+  const root = $('[data-engagement-panel]');
+  if (!root) return;
+  const authed = await isAuthenticated();
+  const stats = await dbApi.getPostInteractions(post.slug);
+  const mine = await dbApi.getPostInteractionsForUser(post.slug);
+
+  const actions = $('[data-engagement-actions]', root);
+  const rating = $('[data-engagement-rate]', root);
+  const comments = $('[data-engagement-comments]', root);
+
+  actions.innerHTML = `
+    <div class="engagement-buttons">
+      <button class="btn btn-ghost ${mine.liked ? 'is-active' : ''}" type="button" data-action="likes">
+        <i data-lucide="thumbs-up"></i> Like (${stats.likes})
+      </button>
+      <button class="btn btn-ghost ${mine.starred ? 'is-active' : ''}" type="button" data-action="stars" title="Star saves this post for revival and re-reading later.">
+        <i data-lucide="star"></i> Star (${stats.stars})
+      </button>
+      <button class="btn btn-ghost ${mine.favorited ? 'is-active' : ''}" type="button" data-action="favorites" title="Favorite boosts this post in your feed ranking.">
+        <i data-lucide="heart"></i> Favorite (${stats.favorites})
+      </button>
+    </div>
+    ${
+      authed
+        ? ''
+        : '<p class="form-help">Sign in from the <a href="./user.html">user panel</a> to interact.</p>'
+    }
+  `;
+
+  rating.innerHTML = `
+    <label for="rating-select" class="form-help">Your rating</label>
+    <div style="display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap">
+      <select id="rating-select" class="select" ${authed ? '' : 'disabled'}>
+        <option value="0">Rate this post…</option>
+        <option value="1" ${mine.rating === 1 ? 'selected' : ''}>1</option>
+        <option value="2" ${mine.rating === 2 ? 'selected' : ''}>2</option>
+        <option value="3" ${mine.rating === 3 ? 'selected' : ''}>3</option>
+        <option value="4" ${mine.rating === 4 ? 'selected' : ''}>4</option>
+        <option value="5" ${mine.rating === 5 ? 'selected' : ''}>5</option>
+      </select>
+      <span class="muted">Average: ${stats.ratingAvg ? stats.ratingAvg.toFixed(1) : '0.0'} (${stats.ratingsCount} ratings)</span>
+    </div>
+  `;
+
+  comments.innerHTML = `
+    <h3 style="font-size:var(--fs-lg);margin-bottom:var(--space-3)">Comments (${stats.comments.length})</h3>
+    <form data-comment-form class="field" ${authed ? '' : 'hidden'}>
+      <textarea class="textarea" name="comment" rows="3" placeholder="Share your reflection..."></textarea>
+      <button class="btn btn-secondary" type="submit"><i data-lucide="message-circle"></i> Post comment</button>
+    </form>
+    ${
+      authed
+        ? ''
+        : '<p class="form-help" style="margin-bottom:var(--space-3)">Sign in to leave comments.</p>'
+    }
+    <div class="comments-list">
+      ${
+        stats.comments.length === 0
+          ? '<p class="muted">No comments yet. Be the first to respond.</p>'
+          : stats.comments
+              .map(
+                (comment) => `
+          <article class="comment-item">
+            <header>
+              <strong>${escapeHTML(comment.username)}</strong>
+              <span class="muted">${formatDateTime(comment.createdAt)}</span>
+            </header>
+            <p>${escapeHTML(comment.text)}</p>
+          </article>
+        `
+              )
+              .join('')
+      }
+    </div>
+  `;
+
+  root.querySelectorAll('[data-action]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const res = await dbApi.toggleInteraction(post.slug, btn.dataset.action);
+      if (!res.ok) return toast(res.error, { type: 'error' });
+      await renderEngagement(post);
+      document.dispatchEvent(new CustomEvent('dhammics:rendered'));
+    });
+  });
+
+  $('#rating-select', root)?.addEventListener('change', async (event) => {
+    const value = Number(event.target.value);
+    if (!value) return;
+    const res = await dbApi.setRating(post.slug, value);
+    if (!res.ok) return toast(res.error, { type: 'error' });
+    await renderEngagement(post);
+    document.dispatchEvent(new CustomEvent('dhammics:rendered'));
+  });
+
+  $('[data-comment-form]', root)?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const text = String(new FormData(form).get('comment') || '');
+    const res = await dbApi.addComment(post.slug, text);
+    if (!res.ok) return toast(res.error, { type: 'error' });
+    form.reset();
+    await renderEngagement(post);
+    document.dispatchEvent(new CustomEvent('dhammics:rendered'));
+  });
 };
 
 const init = async () => {

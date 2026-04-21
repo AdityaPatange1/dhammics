@@ -13,6 +13,18 @@ export const formatDate = (iso) => {
   }).format(date);
 };
 
+export const formatDateTime = (iso) => {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date);
+};
+
 export const readingTime = (text) => {
   const words = text.trim().split(/\s+/).length;
   return Math.max(1, Math.round(words / 220));
@@ -33,6 +45,23 @@ export const escapeHTML = (value = '') =>
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
+
+export const sanitizeHTML = (html = '') => {
+  const template = document.createElement('template');
+  template.innerHTML = String(html);
+  template.content.querySelectorAll('script, iframe, object, embed').forEach((el) => el.remove());
+  template.content.querySelectorAll('*').forEach((el) => {
+    [...el.attributes].forEach((attr) => {
+      const name = attr.name.toLowerCase();
+      const value = String(attr.value || '');
+      if (name.startsWith('on')) el.removeAttribute(attr.name);
+      if ((name === 'href' || name === 'src') && /^javascript:/i.test(value)) {
+        el.removeAttribute(attr.name);
+      }
+    });
+  });
+  return template.innerHTML;
+};
 
 export const toast = (message, { type = 'info', duration = 3200 } = {}) => {
   let container = document.querySelector('.toasts');

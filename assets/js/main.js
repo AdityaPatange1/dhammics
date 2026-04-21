@@ -4,7 +4,7 @@
 
 import { initTheme } from './theme.js';
 import { $, $$, observeReveals } from './utils.js';
-import { isAuthenticated } from './auth.js';
+import { currentUserObject, isAuthenticated, logout } from './auth.js';
 
 const renderIcons = () => {
   if (window.lucide?.createIcons) window.lucide.createIcons();
@@ -38,13 +38,23 @@ const initScrollHeader = () => {
   window.addEventListener('scroll', onScroll, { passive: true });
 };
 
-const initAuthAwareNav = () => {
-  const authed = isAuthenticated();
+const initAuthAwareNav = async () => {
+  const authed = await isAuthenticated();
+  const user = authed ? await currentUserObject() : null;
   $$('[data-auth-only]').forEach((el) => {
     el.hidden = !authed;
   });
   $$('[data-guest-only]').forEach((el) => {
     el.hidden = authed;
+  });
+  $$('[data-current-user]').forEach((el) => {
+    el.textContent = user?.displayName || user?.username || 'User';
+  });
+  $$('[data-logout]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      await logout();
+      location.assign('./index.html');
+    });
   });
 };
 
@@ -59,12 +69,12 @@ const markActiveNav = () => {
   });
 };
 
-const init = () => {
+const init = async () => {
   initTheme();
   renderIcons();
   initNavToggle();
   initScrollHeader();
-  initAuthAwareNav();
+  await initAuthAwareNav();
   markActiveNav();
   observeReveals();
 
@@ -76,7 +86,9 @@ const init = () => {
 };
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', () => {
+    init();
+  });
 } else {
   init();
 }

@@ -22,40 +22,9 @@
       })();
     </script>
   </head>
-  <body>
-    <header class="site-header">
-      <div class="container">
-        <a class="brand" href="./index.html" aria-label="Dhammics home">
-          <span class="brand-mark" aria-hidden="true"><i data-lucide="leaf"></i></span>
-          Dhammics
-        </a>
-        <nav class="nav" aria-label="Primary">
-          <div class="nav-actions">
-            <button
-              class="icon-btn theme-toggle"
-              data-theme-toggle
-              aria-label="Toggle color theme"
-              type="button"
-            >
-              <i data-lucide="moon"></i>
-            </button>
-          </div>
-        </nav>
-      </div>
-    </header>
-    <main class="not-found">
-      <div>
-        <h1>404</h1>
-        <p class="muted" style="max-width: 44ch; margin: 0 auto var(--space-5)">
-          The page you are seeking is empty, impermanent, and not-self. Perhaps try another
-          path.
-        </p>
-        <a class="btn btn-primary" href="./index.html">
-          <i data-lucide="arrow-left"></i> Return home
-        </a>
-      </div>
-    </main>
+  <body data-page="notfound">
+    <div data-app-root></div>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
-    <script type="module" src="./assets/js/main.js"></script>
+    <script type="module" src="./assets/js/app-shell.js"></script>
   </body>
 </html>

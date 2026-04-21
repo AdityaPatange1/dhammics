@@ -145,6 +145,47 @@
   flex-wrap: wrap;
 }
 
+.engagement-panel {
+  margin-top: var(--space-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  background: var(--surface);
+  display: grid;
+  gap: var(--space-4);
+}
+
+.engagement-buttons {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.btn.is-active {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+
+.comments-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.comment-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  background: var(--bg);
+}
+
+.comment-item header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
 .post-loading {
   padding: var(--space-7);
   text-align: center;
@@ -271,6 +312,18 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
+}
+
+.auth-grid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (width <= 900px) {
+  .auth-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .admin-panel h2 {
@@ -403,6 +456,165 @@
   display: flex;
   gap: var(--space-1);
   flex-shrink: 0;
+}
+
+.post-manage-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.post-manage-item {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.post-manage-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.rating-mini {
+  width: 90px;
+}
+
+.comment-mini {
+  min-width: 220px;
+}
+
+.rich-editor-shell {
+  margin: var(--space-4) 0;
+}
+
+.rich-editor {
+  min-height: 260px;
+  margin-top: var(--space-2);
+  background: var(--bg);
+  line-height: var(--lh-relaxed);
+}
+
+.rich-editor p + p {
+  margin-top: 0.8em;
+}
+
+/* ===== User Dashboard ===== */
+.user-dashboard {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (width <= 980px) {
+  .user-dashboard {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard-sidebar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  position: sticky;
+  top: calc(var(--header-h) + var(--space-3));
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (width <= 980px) {
+  .dashboard-sidebar {
+    position: static;
+  }
+}
+
+.dashboard-brand h2 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xl);
+  margin-top: var(--space-2);
+}
+
+.dashboard-nav {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.dashboard-nav-btn {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  text-align: left;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+  border: 1px solid transparent;
+}
+
+.dashboard-nav-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--text);
+}
+
+.dashboard-nav-btn.is-active,
+.dashboard-nav-btn[aria-selected='true'] {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.dashboard-main {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+@media (width <= 840px) {
+  .dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-1);
+}
+
+.stat-card strong {
+  font-size: var(--fs-2xl);
+  color: var(--text);
+  line-height: 1;
+}
+
+.screen-panel {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.screen-head h1 {
+  font-size: var(--fs-3xl);
+  margin-bottom: var(--space-1);
 }
 
 /* Published indicator */

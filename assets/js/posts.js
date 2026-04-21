@@ -1,13 +1,11 @@
 /**
- * Post loader — fetches /content/posts/manifest.json and resolves individual
- * markdown files. Also merges in any local drafts saved via the admin panel
- * for a live preview without needing to redeploy.
+ * Post loader — merges static markdown posts + localStorage user posts.
  */
 
 import { parseFrontMatter, excerpt } from './markdown.js';
+import { dbApi } from './localdb.js';
 
 const MANIFEST_URL = new URL('../../content/posts/manifest.json', import.meta.url);
-const DRAFTS_KEY = 'dhammics:drafts';
 
 const cache = {
   manifest: null,
@@ -23,31 +21,15 @@ const normalise = (entry, body = '') => ({
   slug: entry.slug,
   title: entry.title,
   description: entry.description || excerpt(body, 180),
-  date: entry.date,
+  date: entry.date || new Date().toISOString().slice(0, 10),
   author: entry.author || 'Dhammics',
   tags: Array.isArray(entry.tags) ? entry.tags : [],
   cover: entry.cover || '',
   readingTime: toNumberOr(entry.readingTime, 0),
   file: entry.file || `./content/posts/${entry.slug}.md`,
-  draft: Boolean(entry.draft),
+  local: Boolean(entry.local),
+  contentType: entry.contentType || 'markdown',
 });
-
-const readDrafts = () => {
-  try {
-    const raw = localStorage.getItem(DRAFTS_KEY);
-    if (!raw) return [];
-    const list = JSON.parse(raw);
-    return Array.isArray(list) ? list : [];
-  } catch {
-    return [];
-  }
-};
-
-export const writeDrafts = (list) => {
-  localStorage.setItem(DRAFTS_KEY, JSON.stringify(list));
-};
-
-export const getDrafts = () => readDrafts();
 
 export const loadManifest = async () => {
   if (cache.manifest) return cache.manifest;
@@ -64,58 +46,34 @@ export const loadManifest = async () => {
   return cache.manifest;
 };
 
-export const listPosts = async ({ includeDrafts = true } = {}) => {
-  const { posts } = await loadManifest();
-  const drafts = includeDrafts
-    ? readDrafts().map((d) =>
-        normalise(
-          {
-            slug: d.slug,
-            title: d.title,
-            description: d.description,
-            date: d.date,
-            author: d.author,
-            tags: d.tags,
-            cover: d.cover,
-            readingTime: d.readingTime,
-            draft: true,
-          },
-          d.body
-        )
-      )
-    : [];
-  const merged = [...drafts, ...posts];
+const mergeUnique = (posts) => {
   const seen = new Set();
-  const unique = merged.filter((p) => {
-    if (seen.has(p.slug)) return false;
+  return posts.filter((p) => {
+    if (!p?.slug || seen.has(p.slug)) return false;
     seen.add(p.slug);
     return true;
   });
-  return unique.sort((a, b) => new Date(b.date) - new Date(a.date));
+};
+
+export const listPosts = async ({ includeLocal = true } = {}) => {
+  const { posts: staticPosts } = await loadManifest();
+  const localPosts = includeLocal
+    ? (await dbApi.listLocalPosts()).map((p) => normalise({ ...p, local: true, contentType: 'html' }, p.bodyHtml))
+    : [];
+
+  return mergeUnique([...localPosts, ...staticPosts]).sort((a, b) => new Date(b.date) - new Date(a.date));
 };
 
 export const getPost = async (slug) => {
   if (cache.posts.has(slug)) return cache.posts.get(slug);
 
-  const drafts = readDrafts();
-  const draft = drafts.find((d) => d.slug === slug);
-  if (draft) {
+  const localPosts = await dbApi.listLocalPosts();
+  const local = localPosts.find((p) => p.slug === slug);
+  if (local) {
     const post = {
-      ...normalise(
-        {
-          slug: draft.slug,
-          title: draft.title,
-          description: draft.description,
-          date: draft.date,
-          author: draft.author,
-          tags: draft.tags,
-          cover: draft.cover,
-          readingTime: draft.readingTime,
-          draft: true,
-        },
-        draft.body
-      ),
-      body: draft.body,
+      ...normalise({ ...local, local: true, contentType: 'html' }, local.bodyHtml),
+      bodyHtml: local.bodyHtml || '',
+      body: local.bodyHtml || '',
     };
     cache.posts.set(slug, post);
     return post;

@@ -1,0 +1,47 @@
+<section class="auth-grid" data-auth-shell>
+  <article class="auth-card">
+    <header>
+      <span class="brand-mark" aria-hidden="true"><i data-lucide="log-in"></i></span>
+      <h1>Sign in</h1>
+      <p>Access your feed controls, reading lists, and authoring tools.</p>
+    </header>
+    <form id="signin-form" class="stack">
+      <div class="field">
+        <label for="signin-username">Username</label>
+        <input class="input" id="signin-username" name="username" required />
+      </div>
+      <div class="field">
+        <label for="signin-password">Password</label>
+        <input class="input" id="signin-password" type="password" name="password" required />
+      </div>
+      <label class="form-help" style="display:flex;align-items:center;gap:var(--space-2)">
+        <input type="checkbox" name="remember" /> Keep me signed in
+      </label>
+      <button class="btn btn-primary" type="submit"><i data-lucide="log-in"></i> Sign in</button>
+    </form>
+  </article>
+
+  <article class="auth-card">
+    <header>
+      <span class="brand-mark" aria-hidden="true"><i data-lucide="user-plus"></i></span>
+      <h1>Create account</h1>
+      <p>Local account only for now. API integration will be added later.</p>
+    </header>
+    <form id="signup-form" class="stack">
+      <div class="field">
+        <label for="signup-displayName">Display name</label>
+        <input class="input" id="signup-displayName" name="displayName" required />
+      </div>
+      <div class="field">
+        <label for="signup-username">Username</label>
+        <input class="input" id="signup-username" name="username" required />
+      </div>
+      <div class="field">
+        <label for="signup-password">Password</label>
+        <input class="input" id="signup-password" type="password" name="password" required />
+      </div>
+      <button class="btn btn-secondary" type="submit"><i data-lucide="user-plus"></i> Register</button>
+    </form>
+  </article>
+</section>
+

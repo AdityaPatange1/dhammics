@@ -1,0 +1,153 @@
+<section class="user-dashboard" data-user-shell hidden>
+  <aside class="dashboard-sidebar">
+    <div class="dashboard-brand">
+      <span class="chip"><i data-lucide="layout-dashboard"></i> User dashboard</span>
+      <h2>Welcome, <span data-user-name></span></h2>
+      <p class="muted">Organize reading, engagement, and writing across dedicated screens.</p>
+    </div>
+    <nav class="dashboard-nav" aria-label="User screens">
+      <button type="button" class="dashboard-nav-btn" data-screen-btn="feed" aria-selected="true">
+        <i data-lucide="newspaper"></i> Feed
+      </button>
+      <button type="button" class="dashboard-nav-btn" data-screen-btn="reading">
+        <i data-lucide="bookmark"></i> Reading List
+      </button>
+      <button type="button" class="dashboard-nav-btn" data-screen-btn="favorites">
+        <i data-lucide="heart"></i> Favorites
+      </button>
+      <button type="button" class="dashboard-nav-btn" data-screen-btn="write">
+        <i data-lucide="pen-square"></i> Write Post
+      </button>
+    </nav>
+    <button class="btn btn-ghost" type="button" data-panel-logout>
+      <i data-lucide="log-out"></i> Sign out
+    </button>
+  </aside>
+
+  <div class="dashboard-main">
+    <section class="dashboard-stats">
+      <article class="stat-card">
+        <span class="muted">Total posts</span>
+        <strong data-stat-total-posts>0</strong>
+      </article>
+      <article class="stat-card">
+        <span class="muted">Starred</span>
+        <strong data-stat-starred>0</strong>
+      </article>
+      <article class="stat-card">
+        <span class="muted">Favorites</span>
+        <strong data-stat-favorites>0</strong>
+      </article>
+      <article class="stat-card">
+        <span class="muted">Local posts</span>
+        <strong data-stat-local-posts>0</strong>
+      </article>
+    </section>
+
+    <section class="screen-panel" data-screen-panel="feed">
+      <div class="screen-head">
+        <h1>Feed</h1>
+        <p class="muted">Engage with recent posts: like, star, favorite, rate, and comment.</p>
+      </div>
+      <ul class="post-manage-list" data-feed-list></ul>
+    </section>
+
+    <section class="screen-panel" data-screen-panel="reading" hidden>
+      <div class="screen-head">
+        <h1>Reading List</h1>
+        <p class="muted">Starred posts are for revival and re-reading later.</p>
+      </div>
+      <article class="admin-panel">
+        <h2><i data-lucide="bookmark"></i> Starred Posts</h2>
+        <ul class="drafts-list" data-reading-list></ul>
+      </article>
+      <article class="admin-panel" style="margin-top: var(--space-4)">
+        <h2><i data-lucide="message-circle"></i> Your latest comments</h2>
+        <ul class="drafts-list" data-reading-comments></ul>
+      </article>
+    </section>
+
+    <section class="screen-panel" data-screen-panel="favorites" hidden>
+      <div class="screen-head">
+        <h1>Favorites</h1>
+        <p class="muted">Favorites rerank and push posts up in your personalized feed.</p>
+      </div>
+      <article class="admin-panel">
+        <h2><i data-lucide="heart"></i> Favorited posts</h2>
+        <ul class="drafts-list" data-favorites-list></ul>
+      </article>
+      <article class="admin-panel" style="margin-top: var(--space-4)">
+        <h2><i data-lucide="arrow-up-wide-narrow"></i> Reranked preview</h2>
+        <ul class="drafts-list" data-reranked-list></ul>
+      </article>
+    </section>
+
+    <section class="screen-panel" data-screen-panel="write" hidden>
+      <div class="screen-head">
+        <h1>Write Post</h1>
+        <p class="muted">
+          Medium-style rich editor. Posts are frontend-only and stored in localStorage.
+        </p>
+      </div>
+      <div class="admin-grid">
+        <article class="admin-panel">
+          <form id="composer-form">
+            <div class="field">
+              <label for="title">Title</label>
+              <input class="input" id="title" name="title" required />
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="slug">Slug</label>
+                <input class="input" id="slug" name="slug" />
+              </div>
+              <div class="field">
+                <label for="date">Date</label>
+                <input class="input" id="date" name="date" type="date" />
+              </div>
+            </div>
+            <button class="btn btn-ghost" type="button" data-generate-slug>
+              <i data-lucide="wand-sparkles"></i> Generate slug
+            </button>
+            <div class="field">
+              <label for="description">Description</label>
+              <textarea class="textarea" id="description" name="description" rows="2"></textarea>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="cover">Cover image URL</label>
+                <input class="input" id="cover" name="cover" type="url" />
+              </div>
+              <div class="field">
+                <label for="tags">Tags (comma-separated)</label>
+                <input class="input" id="tags" name="tags" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="author">Author</label>
+              <input class="input" id="author" name="author" />
+            </div>
+            <div class="rich-editor-shell">
+              <div class="editor-toolbar" data-toolbar>
+                <button type="button" class="btn btn-ghost" data-cmd="bold"><i data-lucide="bold"></i></button>
+                <button type="button" class="btn btn-ghost" data-cmd="italic"><i data-lucide="italic"></i></button>
+                <button type="button" class="btn btn-ghost" data-cmd="insertUnorderedList"><i data-lucide="list"></i></button>
+                <button type="button" class="btn btn-ghost" data-cmd="formatBlock"><i data-lucide="heading-2"></i></button>
+                <button type="button" class="btn btn-ghost" data-cmd="createLink"><i data-lucide="link"></i></button>
+                <button type="button" class="btn btn-ghost" data-cmd="insertImage"><i data-lucide="image-plus"></i></button>
+              </div>
+              <div class="rich-editor input" contenteditable="true" data-rich-editor><p>Start writing...</p></div>
+            </div>
+            <button class="btn btn-primary" type="submit"><i data-lucide="save"></i> Save local post</button>
+          </form>
+        </article>
+
+        <aside class="admin-panel">
+          <h2><i data-lucide="files"></i> Your local posts</h2>
+          <ul class="drafts-list" data-local-posts></ul>
+        </aside>
+      </div>
+    </section>
+  </div>
+</section>
+

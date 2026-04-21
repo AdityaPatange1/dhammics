@@ -27,63 +27,10 @@
       })();
     </script>
   </head>
-  <body>
-    <a class="skip-link" href="#main">Skip to content</a>
-
-    <header class="site-header">
-      <div class="container">
-        <a class="brand" href="./index.html" aria-label="Dhammics home">
-          <span class="brand-mark" aria-hidden="true"><i data-lucide="leaf"></i></span>
-          Dhammics
-        </a>
-        <nav class="nav" aria-label="Primary">
-          <ul class="nav-links" data-nav-links>
-            <li><a href="./index.html">Essays</a></li>
-            <li><a href="./index.html#about">About</a></li>
-            <li><a href="./admin.html" data-auth-only hidden>Admin</a></li>
-          </ul>
-          <div class="nav-actions">
-            <button
-              class="icon-btn theme-toggle"
-              data-theme-toggle
-              aria-label="Toggle color theme"
-              type="button"
-            >
-              <i data-lucide="moon"></i>
-            </button>
-            <a class="btn btn-ghost" href="./login.html" data-guest-only>
-              <i data-lucide="log-in"></i> Sign in
-            </a>
-            <a class="btn btn-secondary" href="./admin.html" data-auth-only hidden>
-              <i data-lucide="pen-line"></i> Write
-            </a>
-            <button class="icon-btn nav-toggle" data-nav-toggle aria-label="Toggle menu" type="button">
-              <i data-lucide="menu"></i>
-            </button>
-          </div>
-        </nav>
-      </div>
-    </header>
-
-    <main id="main" data-post-shell>
-      <div class="container container-narrow post-loading">
-        <div class="spinner" aria-hidden="true"></div>
-        <p class="muted">Loading essay…</p>
-      </div>
-    </main>
-
-    <footer class="site-footer">
-      <div class="container">
-        <a class="brand" href="./index.html">
-          <span class="brand-mark" aria-hidden="true"><i data-lucide="leaf"></i></span>
-          Dhammics
-        </a>
-        <p class="footer-meta">Offered in the spirit of dana.</p>
-      </div>
-    </footer>
+  <body data-page="post">
+    <div data-app-root></div>
 
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
-    <script type="module" src="./assets/js/main.js"></script>
-    <script type="module" src="./assets/js/post.js"></script>
+    <script type="module" src="./assets/js/app-shell.js"></script>
   </body>
 </html>
