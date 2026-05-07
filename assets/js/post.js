@@ -50,7 +50,7 @@ const renderPost = async (post) => {
         <a href="./index.html" class="btn btn-ghost" style="margin-bottom: var(--space-5)">
           <i data-lucide="arrow-left"></i> All essays
         </a>
-        ${post.local ? '<span class="chip" style="background: color-mix(in srgb, var(--warning) 20%, transparent); color: var(--warning)">Local user post</span>' : ''}
+        ${post.apiBacked ? '<span class="chip" style="background: color-mix(in srgb, var(--accent) 18%, transparent)">From server</span>' : ''}
         ${post.tags[0] ? `<span class="chip">${escapeHTML(post.tags[0])}</span>` : ''}
         <h1>${escapeHTML(post.title)}</h1>
         <div class="post-meta">

@@ -142,6 +142,7 @@ const copyDist = async () => {
 
 const main = async () => {
   console.log('→ Building Dhammics…');
+  await import('./inject-frontend-env.js');
   const posts = await readPosts();
   await writeManifest(posts);
   await copyDist();

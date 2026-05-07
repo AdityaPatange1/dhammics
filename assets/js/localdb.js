@@ -1,127 +1,144 @@
 /**
- * localdb.js
- *
- * A tiny localStorage-backed API layer. All reads/writes are wrapped in
- * async functions so the rest of the app can later swap this module with
- * a real HTTP API without changing feature code.
+ * Server-backed API with legacy localStorage interaction fallback for
+ * static markdown posts that do not exist on the backend.
  */
 
-const DB_KEY = 'dhammics:db:v1';
-const SESSION_KEY = 'dhammics:session:v1';
+import { apiFetch, clearToken, getToken, parseApiError, setToken } from './http.js';
+import {
+  legacyAddComment,
+  legacyGetPostInteractions,
+  legacyGetPostInteractionsForUser,
+  legacyListUserState,
+  legacySetRating,
+  legacyToggleInteraction,
+} from './legacy-interactions.js';
 
-const defaultDB = () => ({
-  users: [],
-  localPosts: [],
-  interactions: {},
+let apiSlugSet = new Set();
+let apiSlugSetReady = false;
+
+export function invalidateApiCaches() {
+  apiSlugSet = new Set();
+  apiSlugSetReady = false;
+}
+
+export async function refreshApiSlugSet() {
+  const set = new Set();
+  const r1 = await apiFetch('/posts');
+  if (r1.ok) {
+    for (const p of await r1.json()) set.add(p.slug);
+  }
+  const r2 = await apiFetch('/posts/mine');
+  if (r2.ok) {
+    for (const p of await r2.json()) set.add(p.slug);
+  }
+  apiSlugSet = set;
+  apiSlugSetReady = true;
+}
+
+async function slugOnApi(slug) {
+  if (!apiSlugSetReady) await refreshApiSlugSet();
+  return apiSlugSet.has(slug);
+}
+
+const mapUser = (u) => ({
+  id: u.id,
+  username: u.username,
+  displayName: u.display_name,
+  role: u.role,
+  createdAt: u.created_at,
 });
 
-const load = () => {
-  try {
-    const raw = localStorage.getItem(DB_KEY);
-    if (!raw) return defaultDB();
-    const parsed = JSON.parse(raw);
-    return {
-      users: Array.isArray(parsed.users) ? parsed.users : [],
-      localPosts: Array.isArray(parsed.localPosts) ? parsed.localPosts : [],
-      interactions: parsed.interactions && typeof parsed.interactions === 'object' ? parsed.interactions : {},
-    };
-  } catch {
-    return defaultDB();
+const mapStats = (data) => ({
+  slug: data.slug,
+  likes: data.likes,
+  stars: data.stars,
+  favorites: data.favorites,
+  ratingsCount: data.ratings_count,
+  ratingAvg: data.rating_avg,
+  comments: (data.comments || []).map((c) => ({
+    id: c.id,
+    username: c.username,
+    text: c.text,
+    createdAt: c.created_at,
+  })),
+});
+
+const mapMeState = (data) => ({
+  liked: data.liked || [],
+  starred: data.starred || [],
+  favorited: data.favorited || [],
+  ratings: data.ratings || {},
+  comments: (data.comments || []).map((c) => ({
+    id: c.id,
+    slug: c.slug,
+    text: c.text,
+    createdAt: c.created_at,
+  })),
+});
+
+const mergeUserState = (a, b) => {
+  const commentKey = (c) => `${c.slug}:${c.id || c.text?.slice(0, 20)}`;
+  const seen = new Set();
+  const comments = [];
+  for (const c of [...(a.comments || []), ...(b.comments || [])]) {
+    const k = commentKey(c);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    comments.push(c);
   }
-};
-
-const save = (db) => {
-  localStorage.setItem(DB_KEY, JSON.stringify(db));
-  return db;
-};
-
-const makeId = (prefix = 'id') => `${prefix}_${Math.random().toString(36).slice(2, 11)}`;
-
-const nowIso = () => new Date().toISOString();
-
-const getSession = () => {
-  try {
-    const raw = sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY);
-    if (!raw) return null;
-    const session = JSON.parse(raw);
-    if (!session.userId || !session.exp || session.exp < Date.now()) return null;
-    return session;
-  } catch {
-    return null;
-  }
-};
-
-const setSession = (session, remember = false) => {
-  const target = remember ? localStorage : sessionStorage;
-  target.setItem(SESSION_KEY, JSON.stringify(session));
-};
-
-const clearSession = () => {
-  localStorage.removeItem(SESSION_KEY);
-  sessionStorage.removeItem(SESSION_KEY);
-};
-
-const ensurePostBucket = (db, slug) => {
-  if (!db.interactions[slug]) {
-    db.interactions[slug] = {
-      likes: [],
-      stars: [],
-      favorites: [],
-      ratings: {},
-      comments: [],
-    };
-  }
-  return db.interactions[slug];
+  comments.sort((x, y) => new Date(y.createdAt) - new Date(x.createdAt));
+  return {
+    liked: [...new Set([...(a.liked || []), ...(b.liked || [])])],
+    starred: [...new Set([...(a.starred || []), ...(b.starred || [])])],
+    favorited: [...new Set([...(a.favorited || []), ...(b.favorited || [])])],
+    ratings: { ...b.ratings, ...a.ratings },
+    comments,
+  };
 };
 
 export const dbApi = {
   async registerUser({ username, password, displayName }) {
-    const db = load();
-    const name = String(username || '').trim().toLowerCase();
-    const pass = String(password || '');
-    const shown = String(displayName || username || '').trim();
-    if (!name || !pass) return { ok: false, error: 'Username and password are required.' };
-    if (db.users.some((u) => u.username === name)) {
-      return { ok: false, error: 'That username already exists.' };
-    }
-    const user = {
-      id: makeId('user'),
-      username: name,
-      displayName: shown || name,
-      password: pass,
-      createdAt: nowIso(),
-    };
-    db.users.push(user);
-    save(db);
-    return { ok: true, user: { ...user, password: undefined } };
+    clearToken();
+    const res = await apiFetch('/auth/register', {
+      method: 'POST',
+      body: { username, password, displayName },
+    });
+    if (!res.ok) return { ok: false, error: await parseApiError(res) };
+    const data = await res.json();
+    setToken(data.access_token, true);
+    invalidateApiCaches();
+    return { ok: true, user: mapUser(data.user) };
   },
 
   async loginUser({ username, password, remember = false }) {
-    const db = load();
-    const name = String(username || '').trim().toLowerCase();
-    const pass = String(password || '');
-    const user = db.users.find((u) => u.username === name && u.password === pass);
-    if (!user) return { ok: false, error: 'Incorrect username or password.' };
-    const session = {
-      userId: user.id,
-      exp: Date.now() + 1000 * 60 * 60 * 24 * 7,
-    };
-    setSession(session, remember);
-    return { ok: true, user: { ...user, password: undefined } };
+    clearToken();
+    const res = await apiFetch('/auth/login', {
+      method: 'POST',
+      body: { username, password },
+    });
+    if (!res.ok) return { ok: false, error: await parseApiError(res) };
+    const data = await res.json();
+    setToken(data.access_token, Boolean(remember));
+    invalidateApiCaches();
+    return { ok: true, user: mapUser(data.user) };
   },
 
   async logoutUser() {
-    clearSession();
+    clearToken();
+    invalidateApiCaches();
     return { ok: true };
   },
 
   async getCurrentUser() {
-    const session = getSession();
-    if (!session) return null;
-    const db = load();
-    const user = db.users.find((u) => u.id === session.userId);
-    if (!user) return null;
-    return { ...user, password: undefined };
+    const token = getToken();
+    if (!token) return null;
+    const res = await apiFetch('/auth/me');
+    if (!res.ok) {
+      clearToken();
+      return null;
+    }
+    const u = await res.json();
+    return mapUser(u);
   },
 
   async isAuthenticated() {
@@ -129,130 +146,177 @@ export const dbApi = {
   },
 
   async listLocalPosts() {
-    const db = load();
-    return [...db.localPosts].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const res = await apiFetch('/posts/mine');
+    if (!res.ok) return [];
+    const rows = await res.json();
+    return rows.map((p) => ({
+      slug: p.slug,
+      title: p.title,
+      description: p.description || '',
+      date: p.date,
+      author: p.author,
+      tags: p.tags || [],
+      cover: p.cover || '',
+      readingTime: p.reading_time || 0,
+      bodyHtml: '',
+      local: false,
+      contentType: 'html',
+      published: p.published,
+      kind: p.kind,
+    }));
   },
 
   async saveLocalPost(input) {
-    const db = load();
-    const session = getSession();
-    if (!session) return { ok: false, error: 'Please sign in first.' };
+    const token = getToken();
+    if (!token) return { ok: false, error: 'Please sign in first.' };
 
-    const existing = db.localPosts.findIndex((p) => p.slug === input.slug);
-    const post = {
-      ...input,
-      local: true,
+    const slug = String(input.slug || '').trim();
+    const payload = {
+      title: input.title,
+      slug,
+      kind: input.kind || 'essay',
+      description: input.description || '',
+      bodyHtml: input.bodyHtml || '',
+      cover: input.cover || '',
+      date: input.date || new Date().toISOString().slice(0, 10),
+      author: input.author || '',
+      tags: input.tags || [],
+      readingTime: input.readingTime || 0,
+      published: input.published !== false,
       contentType: 'html',
-      authorId: session.userId,
-      updatedAt: nowIso(),
-      createdAt: existing >= 0 ? db.localPosts[existing].createdAt : nowIso(),
     };
-    if (existing >= 0) db.localPosts[existing] = post;
-    else db.localPosts.push(post);
-    save(db);
-    return { ok: true, post };
+
+    const mine = await apiFetch('/posts/mine');
+    let exists = false;
+    if (mine.ok) {
+      exists = (await mine.json()).some((p) => p.slug === slug);
+    }
+
+    let res;
+    if (exists) {
+      res = await apiFetch(`/posts/${encodeURIComponent(slug)}`, {
+        method: 'PATCH',
+        body: {
+          title: payload.title,
+          description: payload.description,
+          body_html: payload.bodyHtml,
+          cover: payload.cover,
+          date: payload.date,
+          author: payload.author,
+          tags: payload.tags,
+          reading_time: payload.readingTime,
+          published: payload.published,
+          kind: payload.kind,
+        },
+      });
+    } else {
+      res = await apiFetch('/posts', {
+        method: 'POST',
+        body: payload,
+      });
+    }
+
+    if (!res.ok) return { ok: false, error: await parseApiError(res) };
+    invalidateApiCaches();
+    await refreshApiSlugSet();
+    const saved = await res.json();
+    return {
+      ok: true,
+      post: {
+        ...input,
+        slug: saved.slug,
+        bodyHtml: saved.body_html || payload.bodyHtml,
+        local: false,
+      },
+    };
   },
 
   async deleteLocalPost(slug) {
-    const db = load();
-    db.localPosts = db.localPosts.filter((p) => p.slug !== slug);
-    save(db);
+    const res = await apiFetch(`/posts/${encodeURIComponent(slug)}`, { method: 'DELETE' });
+    if (!res.ok && res.status !== 404) return { ok: false, error: await parseApiError(res) };
+    invalidateApiCaches();
+    await refreshApiSlugSet();
     return { ok: true };
   },
 
   async getPostInteractions(slug) {
-    const db = load();
-    const bucket = ensurePostBucket(db, slug);
-    return {
-      slug,
-      likes: bucket.likes.length,
-      stars: bucket.stars.length,
-      favorites: bucket.favorites.length,
-      ratingsCount: Object.keys(bucket.ratings).length,
-      ratingAvg:
-        Object.values(bucket.ratings).reduce((sum, n) => sum + Number(n || 0), 0) /
-          Math.max(1, Object.keys(bucket.ratings).length) || 0,
-      comments: [...bucket.comments].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)),
-    };
+    if (await slugOnApi(slug)) {
+      const res = await apiFetch(`/posts/${encodeURIComponent(slug)}/interactions`);
+      if (res.ok) return mapStats(await res.json());
+    }
+    return legacyGetPostInteractions(slug);
   },
 
   async getPostInteractionsForUser(slug, userId) {
-    const db = load();
-    const bucket = ensurePostBucket(db, slug);
-    const uid = userId || (getSession()?.userId ?? null);
-    return {
-      liked: uid ? bucket.likes.includes(uid) : false,
-      starred: uid ? bucket.stars.includes(uid) : false,
-      favorited: uid ? bucket.favorites.includes(uid) : false,
-      rating: uid && bucket.ratings[uid] ? Number(bucket.ratings[uid]) : 0,
-    };
+    const user = userId ? { id: userId } : await this.getCurrentUser();
+    const uid = user?.id || null;
+    if (await slugOnApi(slug)) {
+      const res = await apiFetch(`/posts/${encodeURIComponent(slug)}/interactions/me`);
+      if (res.ok) {
+        const m = await res.json();
+        return {
+          liked: Boolean(m.liked),
+          starred: Boolean(m.starred),
+          favorited: Boolean(m.favorited),
+          rating: m.rating && m.rating >= 1 && m.rating <= 5 ? m.rating : 0,
+        };
+      }
+    }
+    return legacyGetPostInteractionsForUser(slug, uid);
   },
 
   async toggleInteraction(slug, kind) {
-    const session = getSession();
-    if (!session) return { ok: false, error: 'Please sign in to interact.' };
-    if (!['likes', 'stars', 'favorites'].includes(kind)) {
-      return { ok: false, error: 'Unknown interaction type.' };
+    const user = await this.getCurrentUser();
+    if (!user) return { ok: false, error: 'Please sign in to interact.' };
+    if (await slugOnApi(slug)) {
+      const res = await apiFetch(`/posts/${encodeURIComponent(slug)}/interactions/toggle`, {
+        method: 'POST',
+        body: { kind },
+      });
+      if (!res.ok) return { ok: false, error: await parseApiError(res) };
+      const data = await res.json();
+      return { ok: true, active: data.active };
     }
-    const db = load();
-    const bucket = ensurePostBucket(db, slug);
-    const list = bucket[kind];
-    const idx = list.indexOf(session.userId);
-    if (idx >= 0) list.splice(idx, 1);
-    else list.push(session.userId);
-    save(db);
-    return { ok: true, active: idx < 0 };
+    return legacyToggleInteraction(slug, kind, user.id);
   },
 
   async setRating(slug, rating) {
-    const session = getSession();
-    if (!session) return { ok: false, error: 'Please sign in to rate posts.' };
-    const value = Math.max(1, Math.min(5, Number(rating || 0)));
-    const db = load();
-    const bucket = ensurePostBucket(db, slug);
-    bucket.ratings[session.userId] = value;
-    save(db);
-    return { ok: true, value };
+    const user = await this.getCurrentUser();
+    if (!user) return { ok: false, error: 'Please sign in to rate posts.' };
+    if (await slugOnApi(slug)) {
+      const res = await apiFetch(`/posts/${encodeURIComponent(slug)}/interactions/rating`, {
+        method: 'PUT',
+        body: { value: rating },
+      });
+      if (!res.ok) return { ok: false, error: await parseApiError(res) };
+      const data = await res.json();
+      return { ok: true, value: data.value };
+    }
+    return legacySetRating(slug, rating, user.id);
   },
 
   async addComment(slug, text) {
-    const session = getSession();
-    if (!session) return { ok: false, error: 'Please sign in to comment.' };
-    const body = String(text || '').trim();
-    if (!body) return { ok: false, error: 'Comment cannot be empty.' };
-    const db = load();
-    const bucket = ensurePostBucket(db, slug);
-    const user = db.users.find((u) => u.id === session.userId);
-    bucket.comments.push({
-      id: makeId('comment'),
-      userId: session.userId,
-      username: user?.displayName || user?.username || 'User',
-      text: body,
-      createdAt: nowIso(),
-    });
-    save(db);
-    return { ok: true };
+    const user = await this.getCurrentUser();
+    if (!user) return { ok: false, error: 'Please sign in to comment.' };
+    if (await slugOnApi(slug)) {
+      const res = await apiFetch(`/posts/${encodeURIComponent(slug)}/comments`, {
+        method: 'POST',
+        body: { text },
+      });
+      if (!res.ok) return { ok: false, error: await parseApiError(res) };
+      return { ok: true };
+    }
+    const label = user.displayName || user.username || 'User';
+    return legacyAddComment(slug, text, user.id, label);
   },
 
   async listUserState() {
     const user = await this.getCurrentUser();
-    const db = load();
-    if (!user) return { liked: [], starred: [], favorited: [], ratings: {}, comments: [] };
-    const liked = [];
-    const starred = [];
-    const favorited = [];
-    const ratings = {};
-    const comments = [];
-    Object.entries(db.interactions).forEach(([slug, bucket]) => {
-      if (bucket.likes.includes(user.id)) liked.push(slug);
-      if (bucket.stars.includes(user.id)) starred.push(slug);
-      if (bucket.favorites.includes(user.id)) favorited.push(slug);
-      if (bucket.ratings[user.id]) ratings[slug] = Number(bucket.ratings[user.id]);
-      bucket.comments
-        .filter((c) => c.userId === user.id)
-        .forEach((c) => comments.push({ ...c, slug }));
-    });
-    return { liked, starred, favorited, ratings, comments };
+    const legacy = legacyListUserState(user?.id || null);
+    if (!user) return legacy;
+    const res = await apiFetch('/me/state');
+    if (!res.ok) return legacy;
+    const apiState = mapMeState(await res.json());
+    return mergeUserState(apiState, legacy);
   },
 };
-

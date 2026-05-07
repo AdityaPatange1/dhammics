@@ -1,5 +1,5 @@
 import { login, logout, register, currentUserObject } from './auth.js';
-import { listPosts } from './posts.js';
+import { invalidatePostCaches, listPosts } from './posts.js';
 import { dbApi } from './localdb.js';
 import { createNotionEditor } from './notion-editor.js';
 import { $, escapeHTML, formatDate, formatDateTime, readingTime, sanitizeHTML, toast } from './utils.js';
@@ -143,6 +143,7 @@ const bindAuthForms = () => {
 
   $('[data-panel-logout]')?.addEventListener('click', async () => {
     await logout();
+    invalidatePostCaches();
     activeScreen = 'feed';
     await setAuthState();
     await renderUserPanel();
@@ -319,7 +320,8 @@ const bindComposer = async () => {
     };
     const result = await dbApi.saveLocalPost(post);
     if (!result.ok) return toast(result.error, { type: 'error' });
-    toast('Local post saved.', { type: 'success' });
+    invalidatePostCaches();
+    toast('Post saved to the server.', { type: 'success' });
     await renderUserPanel();
     form.reset();
     setCoverPreview(form, '');
@@ -423,6 +425,7 @@ const renderUserPanel = async () => {
   shell.querySelectorAll('[data-delete-local]').forEach((btn) =>
     btn.addEventListener('click', async () => {
       await dbApi.deleteLocalPost(btn.dataset.deleteLocal);
+      invalidatePostCaches();
       await renderUserPanel();
     })
   );

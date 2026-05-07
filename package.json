@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "http-server . -p 4174 -c-1 --cors -s",
+    "dev": "node scripts/inject-frontend-env.js && http-server . -p 4174 -c-1 --cors -s",
     "start": "npm run dev",
     "build": "node scripts/build.js",
     "validate": "node scripts/validate.js",

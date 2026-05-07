@@ -1,9 +1,10 @@
 /**
- * Post loader — merges static markdown posts + localStorage user posts.
+ * Post loader — merges API posts, static markdown manifest, and caches.
  */
 
 import { parseFrontMatter, excerpt } from './markdown.js';
-import { dbApi } from './localdb.js';
+import { apiFetch } from './http.js';
+import { invalidateApiCaches, refreshApiSlugSet } from './localdb.js';
 
 const MANIFEST_URL = new URL('../../content/posts/manifest.json', import.meta.url);
 
@@ -29,6 +30,8 @@ const normalise = (entry, body = '') => ({
   file: entry.file || `./content/posts/${entry.slug}.md`,
   local: Boolean(entry.local),
   contentType: entry.contentType || 'markdown',
+  apiBacked: Boolean(entry.apiBacked),
+  kind: entry.kind,
 });
 
 export const loadManifest = async () => {
@@ -55,28 +58,110 @@ const mergeUnique = (posts) => {
   });
 };
 
+const mapApiListItem = (p) =>
+  normalise(
+    {
+      slug: p.slug,
+      title: p.title,
+      description: p.description || '',
+      date: p.date,
+      author: p.author,
+      tags: p.tags || [],
+      cover: p.cover || '',
+      readingTime: p.reading_time ?? 0,
+      file: '',
+      local: false,
+      contentType: 'html',
+      apiBacked: true,
+      kind: p.kind,
+    },
+    ''
+  );
+
+async function fetchApiPublished() {
+  try {
+    const res = await apiFetch('/posts');
+    if (!res.ok) return [];
+    const rows = await res.json();
+    return rows.map(mapApiListItem);
+  } catch (e) {
+    console.warn('Could not load posts from API:', e);
+    return [];
+  }
+}
+
+async function fetchApiMine() {
+  try {
+    const res = await apiFetch('/posts/mine');
+    if (!res.ok) return [];
+    const rows = await res.json();
+    return rows.map(mapApiListItem);
+  } catch (e) {
+    console.warn('Could not load your posts from API:', e);
+    return [];
+  }
+}
+
+/** Clears post caches after writes or auth changes that affect listings. */
+export function invalidatePostCaches() {
+  cache.manifest = null;
+  cache.posts.clear();
+  invalidateApiCaches();
+}
+
 export const listPosts = async ({ includeLocal = true } = {}) => {
   const { posts: staticPosts } = await loadManifest();
-  const localPosts = includeLocal
-    ? (await dbApi.listLocalPosts()).map((p) => normalise({ ...p, local: true, contentType: 'html' }, p.bodyHtml))
-    : [];
+  await refreshApiSlugSet().catch(() => {});
 
-  return mergeUnique([...localPosts, ...staticPosts]).sort((a, b) => new Date(b.date) - new Date(a.date));
+  const apiPublished = await fetchApiPublished();
+  const apiMine = includeLocal ? await fetchApiMine() : [];
+
+  return mergeUnique([...apiMine, ...apiPublished, ...staticPosts]).sort(
+    (a, b) => new Date(b.date) - new Date(a.date)
+  );
 };
+
+async function fetchPostFromApi(slug) {
+  try {
+    const res = await apiFetch(`/posts/${encodeURIComponent(slug)}`);
+    if (!res.ok) return null;
+    const p = await res.json();
+    const merged = normalise(
+      {
+        slug: p.slug,
+        title: p.title,
+        description: p.description,
+        date: p.date,
+        author: p.author,
+        tags: p.tags || [],
+        cover: p.cover || '',
+        readingTime: p.reading_time ?? 0,
+        file: '',
+        local: false,
+        contentType: 'html',
+        apiBacked: true,
+        kind: p.kind,
+      },
+      p.body_html || ''
+    );
+    return {
+      ...merged,
+      bodyHtml: p.body_html || '',
+      body: p.body_html || '',
+    };
+  } catch (e) {
+    console.warn('API getPost:', e);
+    return null;
+  }
+}
 
 export const getPost = async (slug) => {
   if (cache.posts.has(slug)) return cache.posts.get(slug);
 
-  const localPosts = await dbApi.listLocalPosts();
-  const local = localPosts.find((p) => p.slug === slug);
-  if (local) {
-    const post = {
-      ...normalise({ ...local, local: true, contentType: 'html' }, local.bodyHtml),
-      bodyHtml: local.bodyHtml || '',
-      body: local.bodyHtml || '',
-    };
-    cache.posts.set(slug, post);
-    return post;
+  const apiPost = await fetchPostFromApi(slug);
+  if (apiPost) {
+    cache.posts.set(slug, apiPost);
+    return apiPost;
   }
 
   const { posts } = await loadManifest();
@@ -88,7 +173,10 @@ export const getPost = async (slug) => {
   if (!res.ok) throw new Error(`Failed to load post: ${res.status}`);
   const text = await res.text();
   const { data, body } = parseFrontMatter(text);
-  const merged = { ...meta, ...normalise({ ...meta, ...data }, body), body };
+  const merged = {
+    ...normalise({ ...meta, ...data, apiBacked: false }, body),
+    body,
+  };
   cache.posts.set(slug, merged);
   return merged;
 };
