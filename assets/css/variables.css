@@ -1,33 +1,33 @@
-/* Design tokens — light green + white palette with full dark mode support. */
+/* Design tokens — machine orange + warm neutrals, full dark mode support. */
 
 :root {
   color-scheme: light dark;
 
-  /* Brand palette (light green) */
-  --brand-50: #f1faf3;
-  --brand-100: #dff3e2;
-  --brand-200: #bde8c3;
-  --brand-300: #91d69d;
-  --brand-400: #63be74;
-  --brand-500: #41a555;
-  --brand-600: #2f8843;
-  --brand-700: #266c37;
-  --brand-800: #21562f;
-  --brand-900: #1c4828;
+  /* Brand palette (machine orange — industrial / safety-orange family) */
+  --brand-50: #fff7ed;
+  --brand-100: #ffedd5;
+  --brand-200: #fed7aa;
+  --brand-300: #fdba74;
+  --brand-400: #fb923c;
+  --brand-500: #f97316;
+  --brand-600: #ea580c;
+  --brand-700: #c2410c;
+  --brand-800: #9a3412;
+  --brand-900: #7c2d12;
 
   /* Surfaces (light mode) */
-  --bg: #ffffff;
-  --bg-subtle: #f7fbf8;
+  --bg: #fffdfb;
+  --bg-subtle: #fff8f3;
   --bg-elevated: #ffffff;
   --surface: #ffffff;
-  --surface-alt: #f1faf3;
-  --border: #e3eee6;
-  --border-strong: #c9ddce;
+  --surface-alt: #fff5eb;
+  --border: #fde4d0;
+  --border-strong: #f5cdb0;
 
   /* Text */
-  --text: #14241a;
-  --text-muted: #556b5e;
-  --text-soft: #7a8f84;
+  --text: #1a1410;
+  --text-muted: #5c5249;
+  --text-soft: #88786a;
   --text-inverse: #ffffff;
 
   /* Brand roles */
@@ -39,14 +39,14 @@
 
   /* Status */
   --danger: #c0392b;
-  --warning: #b7791f;
+  --warning: #d97706;
   --success: var(--brand-600);
 
-  /* Shadows */
-  --shadow-xs: 0 1px 2px rgb(20 36 26 / 0.04);
-  --shadow-sm: 0 2px 6px rgb(20 36 26 / 0.06);
-  --shadow-md: 0 8px 20px rgb(20 36 26 / 0.08);
-  --shadow-lg: 0 20px 40px rgb(20 36 26 / 0.12);
+  /* Shadows (warm machine tint) */
+  --shadow-xs: 0 1px 2px rgb(40 24 12 / 0.06);
+  --shadow-sm: 0 2px 6px rgb(40 24 12 / 0.08);
+  --shadow-md: 0 8px 20px rgb(40 24 12 / 0.1);
+  --shadow-lg: 0 20px 40px rgb(40 24 12 / 0.14);
 
   /* Radii */
   --radius-xs: 6px;
@@ -107,57 +107,57 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --bg: #0e1613;
-  --bg-subtle: #121d19;
-  --bg-elevated: #16231e;
-  --surface: #162320;
-  --surface-alt: #1b2c26;
-  --border: #243a31;
-  --border-strong: #2f4c40;
+  --bg: #14110e;
+  --bg-subtle: #1c1814;
+  --bg-elevated: #231e19;
+  --surface: #231e19;
+  --surface-alt: #2a241e;
+  --border: #3d3028;
+  --border-strong: #524438;
 
-  --text: #e8f1eb;
-  --text-muted: #a8bdb1;
-  --text-soft: #7e958a;
-  --text-inverse: #0e1613;
+  --text: #faf6f1;
+  --text-muted: #c4b8ab;
+  --text-soft: #9a8b7c;
+  --text-inverse: #14110e;
 
   --accent: var(--brand-400);
   --accent-hover: var(--brand-300);
-  --accent-soft: #1c3326;
-  --accent-soft-hover: #234334;
-  --focus-ring: color-mix(in srgb, var(--brand-300) 45%, transparent);
+  --accent-soft: #3d2418;
+  --accent-soft-hover: #4d2e1f;
+  --focus-ring: color-mix(in srgb, var(--brand-400) 45%, transparent);
 
-  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.25);
-  --shadow-sm: 0 2px 6px rgb(0 0 0 / 0.3);
-  --shadow-md: 0 10px 24px rgb(0 0 0 / 0.4);
-  --shadow-lg: 0 24px 48px rgb(0 0 0 / 0.5);
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.28);
+  --shadow-sm: 0 2px 6px rgb(0 0 0 / 0.32);
+  --shadow-md: 0 10px 24px rgb(0 0 0 / 0.42);
+  --shadow-lg: 0 24px 48px rgb(0 0 0 / 0.52);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']):not([data-theme='dark']) {
     color-scheme: dark;
 
-    --bg: #0e1613;
-    --bg-subtle: #121d19;
-    --bg-elevated: #16231e;
-    --surface: #162320;
-    --surface-alt: #1b2c26;
-    --border: #243a31;
-    --border-strong: #2f4c40;
+    --bg: #14110e;
+    --bg-subtle: #1c1814;
+    --bg-elevated: #231e19;
+    --surface: #231e19;
+    --surface-alt: #2a241e;
+    --border: #3d3028;
+    --border-strong: #524438;
 
-    --text: #e8f1eb;
-    --text-muted: #a8bdb1;
-    --text-soft: #7e958a;
-    --text-inverse: #0e1613;
+    --text: #faf6f1;
+    --text-muted: #c4b8ab;
+    --text-soft: #9a8b7c;
+    --text-inverse: #14110e;
 
     --accent: var(--brand-400);
     --accent-hover: var(--brand-300);
-    --accent-soft: #1c3326;
-    --accent-soft-hover: #234334;
-    --focus-ring: color-mix(in srgb, var(--brand-300) 45%, transparent);
+    --accent-soft: #3d2418;
+    --accent-soft-hover: #4d2e1f;
+    --focus-ring: color-mix(in srgb, var(--brand-400) 45%, transparent);
 
-    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.25);
-    --shadow-sm: 0 2px 6px rgb(0 0 0 / 0.3);
-    --shadow-md: 0 10px 24px rgb(0 0 0 / 0.4);
-    --shadow-lg: 0 24px 48px rgb(0 0 0 / 0.5);
+    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.28);
+    --shadow-sm: 0 2px 6px rgb(0 0 0 / 0.32);
+    --shadow-md: 0 10px 24px rgb(0 0 0 / 0.42);
+    --shadow-lg: 0 24px 48px rgb(0 0 0 / 0.52);
   }
 }

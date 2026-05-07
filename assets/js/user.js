@@ -1,6 +1,7 @@
 import { login, logout, register, currentUserObject } from './auth.js';
 import { listPosts } from './posts.js';
 import { dbApi } from './localdb.js';
+import { createNotionEditor } from './notion-editor.js';
 import { $, escapeHTML, formatDate, formatDateTime, readingTime, sanitizeHTML, toast } from './utils.js';
 
 const slugify = (value) =>
@@ -12,8 +13,80 @@ const slugify = (value) =>
     .replace(/^-+|-+$/g, '')
     .slice(0, 90);
 
+/** Data URLs for cover can be large; keep localStorage posts under typical quota. */
+const MAX_COVER_FILE_BYTES = 1.5 * 1024 * 1024;
+
+const setCoverPreview = (root, src) => {
+  const el = root.querySelector('[data-cover-preview]');
+  if (!el) return;
+  if (!src) {
+    el.hidden = true;
+    el.innerHTML = '';
+    return;
+  }
+  el.hidden = false;
+  el.replaceChildren();
+  const img = document.createElement('img');
+  img.alt = '';
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.src = src;
+  el.appendChild(img);
+};
+
+const bindCoverImageField = (root) => {
+  const urlInput = root.querySelector('#composer-cover');
+  const fileInput = root.querySelector('#composer-cover-file');
+  const trigger = root.querySelector('[data-cover-upload-trigger]');
+  const clearBtn = root.querySelector('[data-cover-clear]');
+
+  trigger?.addEventListener('click', () => fileInput?.click());
+
+  fileInput?.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast('Please choose an image file (JPEG, PNG, GIF, WebP, or SVG).', { type: 'error' });
+      fileInput.value = '';
+      return;
+    }
+    if (file.size > MAX_COVER_FILE_BYTES) {
+      toast(
+        `That image is too large to embed (${Math.round(file.size / 1024)} KB). Max about ${Math.round(MAX_COVER_FILE_BYTES / 1024)} KB for local posts—use a URL or a smaller file.`,
+        { type: 'error' }
+      );
+      fileInput.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      if (urlInput) urlInput.value = dataUrl;
+      setCoverPreview(root, dataUrl);
+      if (window.lucide?.createIcons) window.lucide.createIcons();
+    };
+    reader.onerror = () => {
+      toast('Could not read that file.', { type: 'error' });
+    };
+    reader.readAsDataURL(file);
+    fileInput.value = '';
+  });
+
+  urlInput?.addEventListener('input', () => {
+    setCoverPreview(root, urlInput.value.trim());
+  });
+
+  clearBtn?.addEventListener('click', () => {
+    if (urlInput) urlInput.value = '';
+    if (fileInput) fileInput.value = '';
+    setCoverPreview(root, '');
+  });
+};
+
 let composerBound = false;
+let writeShellBound = false;
 let activeScreen = 'feed';
+let notionEditor = null;
 
 const showScreen = (name) => {
   activeScreen = name;
@@ -157,34 +230,65 @@ const bindInteractions = (root) => {
   );
 };
 
+const closeWriteFullscreen = () => {
+  const shell = $('[data-write-fullscreen]');
+  if (!shell || shell.hidden) return;
+  shell.hidden = true;
+  document.body.classList.remove('write-fs-open');
+};
+
+const openWriteFullscreen = () => {
+  const shell = $('[data-write-fullscreen]');
+  if (!shell) return;
+  shell.hidden = false;
+  document.body.classList.add('write-fs-open');
+  const dateInput = $('#composer-date');
+  if (dateInput && !dateInput.value) {
+    dateInput.value = new Date().toISOString().slice(0, 10);
+  }
+  if (window.lucide?.createIcons) window.lucide.createIcons();
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => notionEditor?.focus());
+  });
+};
+
+const bindWriteFullscreenShell = () => {
+  if (writeShellBound) return;
+  const shell = $('[data-write-fullscreen]');
+  if (!shell) return;
+  writeShellBound = true;
+
+  shell.querySelector('[data-close-write-editor]')?.addEventListener('click', closeWriteFullscreen);
+
+  // The launch button lives outside the shell, inside the dashboard panel.
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-open-write-editor]')) openWriteFullscreen();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !shell.hidden) {
+      e.preventDefault();
+      closeWriteFullscreen();
+    }
+  });
+};
+
 const bindComposer = async () => {
   if (composerBound) return;
-  const form = $('#composer-form');
-  const editor = $('[data-rich-editor]');
-  if (!form || !editor) return;
+  // With the new architecture, the form IS the fullscreen container.
+  const form = $('[data-write-fullscreen]');
+  const editorRoot = form?.querySelector('[data-notion-root]');
+  const toolbar = form?.querySelector('[data-toolbar]');
+  const imageTray = form?.querySelector('[data-image-tray]');
+  if (!form || !editorRoot || !toolbar || !imageTray) return;
 
-  $('[data-toolbar]')?.addEventListener('click', (event) => {
-    const btn = event.target.closest('button[data-cmd]');
-    if (!btn) return;
-    const command = btn.dataset.cmd;
-    if (command === 'createLink') {
-      const url = prompt('Enter URL');
-      if (!url) return;
-      document.execCommand(command, false, url);
-      return;
-    }
-    if (command === 'formatBlock') {
-      document.execCommand(command, false, 'h2');
-      return;
-    }
-    if (command === 'insertImage') {
-      const url = prompt('Enter pre-hosted image URL');
-      if (!url) return;
-      document.execCommand(command, false, url);
-      return;
-    }
-    document.execCommand(command, false);
+  notionEditor = await createNotionEditor({
+    rootElement: editorRoot,
+    toolbarElement: toolbar,
+    imageTrayElement: imageTray,
   });
+  notionEditor.setHTML('<p></p>');
+  bindCoverImageField(form);
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -192,35 +296,43 @@ const bindComposer = async () => {
     const title = String(data.get('title') || '').trim();
     const slug = String(data.get('slug') || '').trim() || slugify(title);
     if (!title || !slug) return toast('Title and slug are required.', { type: 'error' });
-    const bodyHtml = sanitizeHTML(editor.innerHTML);
+    const editorHtml = notionEditor?.getHTML() || '<p></p>';
+    const images = notionEditor?.getImages() || [];
+    const imageHtml = images.map((url) => `<p><img src="${url}" alt="" loading="lazy" /></p>`).join('');
+    const bodyHtml = sanitizeHTML(`${editorHtml}${imageHtml}`);
     const post = {
       title,
       slug,
       date: String(data.get('date') || '') || new Date().toISOString().slice(0, 10),
-      author: String(data.get('author') || '') || (await currentUserObject())?.displayName || 'Dhammics User',
+      author:
+        String(data.get('author') || '') ||
+        (await currentUserObject())?.displayName ||
+        'Dhammics User',
       description: String(data.get('description') || '').trim(),
       cover: String(data.get('cover') || '').trim(),
       tags: String(data.get('tags') || '')
         .split(',')
         .map((t) => t.trim())
         .filter(Boolean),
-      readingTime: readingTime(editor.textContent || ''),
+      readingTime: readingTime(bodyHtml.replace(/<[^>]*>/g, ' ')),
       bodyHtml,
     };
     const result = await dbApi.saveLocalPost(post);
     if (!result.ok) return toast(result.error, { type: 'error' });
-    toast('Local post saved. It now appears in the feed.', { type: 'success' });
+    toast('Local post saved.', { type: 'success' });
     await renderUserPanel();
     form.reset();
-    editor.innerHTML = '<p>Start writing...</p>';
+    setCoverPreview(form, '');
+    notionEditor?.clear();
   });
 
-  $('[data-generate-slug]')?.addEventListener('click', () => {
-    const titleField = form.elements.namedItem('title');
-    const slugField = form.elements.namedItem('slug');
-    const title = String(titleField?.value || '');
-    if (slugField) slugField.value = slugify(title);
+  form.querySelector('[data-generate-slug]')?.addEventListener('click', () => {
+    const titleInput = form.querySelector('#composer-title');
+    const slugInput = form.querySelector('#composer-slug');
+    if (slugInput) slugInput.value = slugify(titleInput?.value || '');
   });
+
+  if (window.lucide?.createIcons) window.lucide.createIcons();
   composerBound = true;
 };
 
@@ -323,6 +435,7 @@ const renderUserPanel = async () => {
 const init = async () => {
   bindAuthForms();
   bindScreenNav();
+  bindWriteFullscreenShell();
   await setAuthState();
   await renderUserPanel();
   await bindComposer();

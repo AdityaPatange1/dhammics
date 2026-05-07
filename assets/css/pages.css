@@ -593,6 +593,584 @@
   margin-top: 0.8em;
 }
 
+.notion-editor {
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--border));
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 92%, transparent), var(--bg));
+  overflow: hidden;
+}
+
+.notion-toolbar {
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-subtle) 72%, transparent);
+  padding: var(--space-2);
+}
+
+.notion-editor-root {
+  min-height: 340px;
+  padding: var(--space-4);
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+  caret-color: var(--accent);
+}
+
+/* The Lexical surface inside the fullscreen editor uses no borders/backgrounds of its own — the wfe-editor-area provides the white-space writing canvas. */
+.notion-editor-surface {
+  background: transparent;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+}
+
+.notion-editor-surface:focus,
+.notion-editor-surface:focus-within {
+  outline: none;
+  box-shadow: none;
+}
+
+.notion-editor-root.is-empty {
+  position: relative;
+}
+
+.notion-editor-root.is-empty::before {
+  content: 'Start writing your post…';
+  position: absolute;
+  inset: var(--space-4);
+  color: var(--text-soft);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.notion-editor-root.is-empty > * {
+  position: relative;
+  z-index: 1;
+  min-height: 1.5em;
+}
+
+.notion-editor-root h1,
+.notion-editor-root h2,
+.notion-editor-root h3,
+.notion-editor-root h4,
+.notion-editor-root h5,
+.notion-editor-root h6 {
+  margin: 0.6em 0 0.35em;
+  line-height: var(--lh-tight);
+}
+
+.notion-editor-root h1 {
+  font-size: var(--fs-3xl);
+}
+
+.notion-editor-root h4 {
+  font-size: var(--fs-xl);
+}
+
+.notion-editor-root h5 {
+  font-size: var(--fs-lg);
+}
+
+.notion-editor-root h6 {
+  font-size: var(--fs-md);
+  color: var(--text-muted);
+}
+
+.notion-editor-root p {
+  margin: 0.5em 0;
+}
+
+.notion-editor-root blockquote {
+  border-left: 3px solid var(--accent);
+  margin: 0.8em 0;
+  padding: 0.4em 0.8em;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  border-radius: var(--radius-xs);
+}
+
+.notion-image-tray {
+  border-top: 1px solid var(--border);
+  padding: var(--space-3);
+  background: color-mix(in srgb, var(--bg-subtle) 62%, transparent);
+}
+
+.notion-image-grid {
+  margin-top: var(--space-2);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-2);
+}
+
+.notion-image-item {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.notion-image-item img {
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+}
+
+.notion-image-item .icon-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 26px;
+  height: 26px;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+}
+
+/* ================================================================
+   Full-screen Write Editor  (.wfe-*)
+   Layout contract:
+     form.wfe-app                  — fixed inset:0, flex-col
+       header.wfe-topbar           — flex-shrink:0
+       .wfe-title-zone             — flex-shrink:0
+       .wfe-toolbar-zone           — flex-shrink:0
+       .wfe-scroll-body            — flex:1, min-height:0, overflow-y:auto  ← only scroll zone
+         .wfe-editor-area          — min-height:60vh
+           [data-notion-root]      — grows naturally, no overflow set
+         .notion-image-tray
+         details.wfe-settings-panel
+   ================================================================ */
+
+body.write-fs-open {
+  overflow: hidden;
+}
+
+/* ── App shell ── */
+.wfe-app {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* ── Topbar ── */
+.wfe-topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+  height: 48px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-xs);
+}
+
+.wfe-topbar-center {
+  flex: 1;
+  text-align: center;
+  font-size: var(--fs-sm);
+}
+
+.wfe-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.wfe-topbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.wfe-topbar-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.wfe-save-btn {
+  min-width: 110px;
+}
+
+.wfe-btn-label {
+  font-size: var(--fs-xs);
+}
+
+/* ── Title zone ── */
+.wfe-title-zone {
+  flex-shrink: 0;
+  padding: var(--space-3) var(--space-6);
+  border-bottom: 1px solid var(--border);
+}
+
+.wfe-title-input {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  font-size: var(--fs-3xl);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--text);
+  padding: 0;
+  font-family: var(--font-sans);
+}
+
+.wfe-title-input::placeholder {
+  color: var(--text-soft);
+}
+
+/* ── Toolbar zone ── */
+.wfe-toolbar-zone {
+  flex-shrink: 0;
+  position: relative;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+}
+
+.wfe-toolbar {
+  /* flex wrap so it wraps onto at most 2 rows on small viewports */
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.wfe-toolbar-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1px;
+  padding: 4px var(--space-3);
+  min-height: 36px;
+}
+
+/* Compact icon button */
+.wfe-tb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.wfe-tb-btn svg,
+.wfe-tb-btn [data-lucide] {
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+
+.wfe-tb-btn:hover {
+  background: color-mix(in srgb, var(--accent-soft) 60%, transparent);
+  color: var(--accent);
+  border-color: var(--border);
+}
+
+.wfe-tb-btn:active {
+  background: var(--accent-soft);
+}
+
+.wfe-tb-btn.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* Visual separator "|" between groups */
+.wfe-toolbar-sep {
+  display: inline-block;
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 4px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* Selects row */
+.wfe-toolbar-selects {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.wfe-tb-select {
+  height: 26px;
+  padding: 0 6px;
+  font-size: var(--fs-xs);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  min-width: 0;
+}
+
+.wfe-tb-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Hidden colour pickers (triggered by toolbar buttons) */
+.wfe-color-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Emoji popover — absolute, anchored inside toolbar zone */
+.wfe-emoji-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: var(--space-3);
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  max-width: 260px;
+}
+
+.wfe-emoji-btn {
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 4px 5px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.wfe-emoji-btn:hover {
+  background: var(--accent-soft);
+}
+
+/* ── Scrollable body (THE ONLY SCROLL ZONE) ── */
+.wfe-scroll-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* momentum scroll on iOS */
+}
+
+/* ── Editor area ── */
+.wfe-editor-area {
+  min-height: 62vh; /* ensures typing area is always visible, even when empty */
+  padding: var(--space-5) var(--space-6);
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Settings panel ── */
+.wfe-settings-panel {
+  border-top: 1px solid var(--border);
+  background: var(--bg-subtle);
+}
+
+.wfe-settings-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.wfe-settings-summary::-webkit-details-marker {
+  display: none;
+}
+
+.wfe-settings-hint {
+  font-weight: 400;
+  font-size: var(--fs-xs);
+}
+
+.wfe-settings-body {
+  padding: 0 var(--space-5) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Fieldset (cover image) */
+.wfe-fieldset {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.wfe-legend {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0 4px;
+}
+
+.wfe-cover-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.wfe-cover-url-input {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.wfe-cover-preview {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  max-width: 360px;
+  background: var(--bg);
+}
+
+.wfe-cover-preview img {
+  display: block;
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+}
+
+/* Settings metadata grid */
+.wfe-settings-grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.wfe-span-2 {
+  grid-column: span 2;
+}
+
+@media (width <= 600px) {
+  .wfe-settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wfe-span-2 {
+    grid-column: unset;
+  }
+
+  .wfe-title-zone,
+  .wfe-editor-area {
+    padding-inline: var(--space-4);
+  }
+}
+
+/* ── Launch card (on the "Write" dashboard panel) ── */
+.write-launch-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.write-launch-copy h2 {
+  margin: 0 0 var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-xl);
+}
+
+.write-launch-btn {
+  flex-shrink: 0;
+}
+
+.write-local-wide {
+  width: 100%;
+}
+
+/* Lexical code / table surfaces inside editor */
+.notion-editor-root pre.lexical-code,
+.notion-editor-root .lexical-code {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  overflow-x: auto;
+}
+
+.notion-editor-root table.lexical-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75em 0;
+  font-size: var(--fs-sm);
+}
+
+.notion-editor-root .lexical-table-cell,
+.notion-editor-root .lexical-table-cell-header {
+  border: 1px solid var(--border);
+  padding: var(--space-2);
+  vertical-align: top;
+  min-width: 72px;
+}
+
+.notion-editor-root .lexical-table-row {
+  background: var(--surface);
+}
+
 /* ===== User Dashboard ===== */
 .user-dashboard {
   display: grid;

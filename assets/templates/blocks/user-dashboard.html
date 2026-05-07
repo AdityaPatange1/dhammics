@@ -104,68 +104,29 @@
       <div class="screen-head">
         <h1>Write Post</h1>
         <p class="muted">
-          Medium-style rich editor. Posts are frontend-only and stored in localStorage.
+          Open the full-screen composer for a Notion- or Medium-style writing surface. Posts stay on this device
+          (localStorage).
         </p>
       </div>
-      <div class="admin-grid">
-        <article class="admin-panel dashboard-surface">
-          <form id="composer-form">
-            <div class="field">
-              <label for="title">Title</label>
-              <input class="input" id="title" name="title" required />
-            </div>
-            <div class="row">
-              <div class="field">
-                <label for="slug">Slug</label>
-                <input class="input" id="slug" name="slug" />
-              </div>
-              <div class="field">
-                <label for="date">Date</label>
-                <input class="input" id="date" name="date" type="date" />
-              </div>
-            </div>
-            <button class="btn btn-ghost" type="button" data-generate-slug>
-              <i data-lucide="wand-sparkles"></i> Generate slug
-            </button>
-            <div class="field">
-              <label for="description">Description</label>
-              <textarea class="textarea" id="description" name="description" rows="2"></textarea>
-            </div>
-            <div class="row">
-              <div class="field">
-                <label for="cover">Cover image URL</label>
-                <input class="input" id="cover" name="cover" type="url" />
-              </div>
-              <div class="field">
-                <label for="tags">Tags (comma-separated)</label>
-                <input class="input" id="tags" name="tags" />
-              </div>
-            </div>
-            <div class="field">
-              <label for="author">Author</label>
-              <input class="input" id="author" name="author" />
-            </div>
-            <div class="rich-editor-shell">
-              <div class="editor-toolbar" data-toolbar>
-                <button type="button" class="btn btn-ghost" data-cmd="bold"><i data-lucide="bold"></i></button>
-                <button type="button" class="btn btn-ghost" data-cmd="italic"><i data-lucide="italic"></i></button>
-                <button type="button" class="btn btn-ghost" data-cmd="insertUnorderedList"><i data-lucide="list"></i></button>
-                <button type="button" class="btn btn-ghost" data-cmd="formatBlock"><i data-lucide="heading-2"></i></button>
-                <button type="button" class="btn btn-ghost" data-cmd="createLink"><i data-lucide="link"></i></button>
-                <button type="button" class="btn btn-ghost" data-cmd="insertImage"><i data-lucide="image-plus"></i></button>
-              </div>
-              <div class="rich-editor input" contenteditable="true" data-rich-editor><p>Start writing...</p></div>
-            </div>
-            <button class="btn btn-primary" type="submit"><i data-lucide="save"></i> Save local post</button>
-          </form>
-        </article>
-
-        <aside class="admin-panel dashboard-surface">
-          <h2><i data-lucide="files"></i> Your local posts</h2>
-          <ul class="drafts-list" data-local-posts></ul>
-        </aside>
-      </div>
+      <article class="write-launch-card dashboard-surface">
+        <div class="write-launch-copy">
+          <h2><i data-lucide="maximize-2"></i> Full-screen editor</h2>
+          <p class="muted">
+            The rich editor opens edge-to-edge over this page (not a floating card) so you can focus on drafting,
+            formatting, and media without the sidebar squeezing the canvas.
+          </p>
+        </div>
+        <button type="button" class="btn btn-primary write-launch-btn" data-open-write-editor>
+          <i data-lucide="pen-line"></i> Open full-screen editor
+        </button>
+      </article>
+      <article class="admin-panel dashboard-surface write-local-wide">
+        <h2><i data-lucide="files"></i> Your local posts</h2>
+        <p class="muted form-help">Saved drafts appear here and in the site feed when “include local” is active.</p>
+        <ul class="drafts-list" data-local-posts></ul>
+      </article>
     </section>
   </div>
+  {{> write-fullscreen}}
 </section>
 

@@ -1,0 +1,11 @@
+# FastAPI stack — pin loosely for security patches; lock in prod via pip-compile if desired
+fastapi>=0.115,<1
+uvicorn[standard]>=0.34,<1
+motor>=3.6,<4
+pydantic>=2.10,<3
+pydantic-settings>=2.7,<3
+python-jose[cryptography]>=3.3,<4
+bcrypt>=4.2,<5
+python-multipart>=0.0.20,<1
+email-validator>=2.2,<3
+slowapi>=0.1.9,<1

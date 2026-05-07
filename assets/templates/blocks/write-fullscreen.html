@@ -1,0 +1,179 @@
+{{!--
+  Full-screen write editor.
+  Architecture:
+    form.wfe-app (fixed, flex-col, z-300)
+      header.wfe-topbar      — flex-shrink:0, never scrolls
+      div.wfe-title-zone     — flex-shrink:0, never scrolls
+      div.wfe-toolbar-zone   — flex-shrink:0, never scrolls
+      div.wfe-scroll-body    — flex:1, min-height:0, overflow-y:auto  ← only scroll zone
+        div.wfe-editor-area
+          div[data-notion-root]  (Lexical root, min-height:60vh)
+        div[data-image-tray]
+        details.wfe-settings
+--}}
+<form
+  id="composer-form"
+  class="wfe-app"
+  data-write-fullscreen
+  hidden
+  autocomplete="off"
+  aria-modal="true"
+  role="dialog"
+  aria-labelledby="wfe-dialog-label"
+  novalidate
+>
+  <!-- ① Topbar — fixed, never scrolls -->
+  <header class="wfe-topbar">
+    <button
+      type="button"
+      class="wfe-topbar-btn"
+      data-close-write-editor
+      aria-label="Close editor and return to dashboard"
+    >
+      <i data-lucide="chevron-left"></i>
+      <span>Close</span>
+    </button>
+
+    <span id="wfe-dialog-label" class="wfe-topbar-center muted">
+      Local draft · device only
+    </span>
+
+    <div class="wfe-topbar-right">
+      <button
+        type="button"
+        class="wfe-topbar-btn"
+        data-generate-slug
+        title="Generate URL slug from title"
+      >
+        <i data-lucide="wand-sparkles"></i>
+        <span class="wfe-btn-label">Slug</span>
+      </button>
+      <button type="submit" class="btn btn-primary wfe-save-btn">
+        <i data-lucide="save"></i>
+        Save draft
+      </button>
+    </div>
+  </header>
+
+  <!-- ② Title — fixed, never scrolls -->
+  <div class="wfe-title-zone">
+    <input
+      class="wfe-title-input"
+      id="composer-title"
+      name="title"
+      type="text"
+      required
+      placeholder="Untitled post…"
+      aria-label="Post title"
+      spellcheck="true"
+    />
+  </div>
+
+  <!-- ③ Compact formatting toolbar — fixed, never scrolls -->
+  <div class="wfe-toolbar-zone">
+    <div
+      class="wfe-toolbar"
+      data-toolbar
+      role="toolbar"
+      aria-label="Formatting toolbar"
+    ></div>
+  </div>
+
+  <!-- ④ Scrollable body — only this region scrolls -->
+  <div class="wfe-scroll-body">
+    <!-- Lexical editor surface -->
+    <div class="wfe-editor-area">
+      <div
+        class="notion-editor-root notion-editor-surface"
+        data-notion-root
+        tabindex="0"
+        aria-label="Post body editor"
+        aria-multiline="true"
+      ></div>
+    </div>
+
+    <!-- Attached image gallery (populated by notion-editor.js) -->
+    <div class="notion-image-tray" data-image-tray hidden></div>
+
+    <!-- Post settings panel (collapsible) -->
+    <details class="wfe-settings-panel">
+      <summary class="wfe-settings-summary">
+        <i data-lucide="sliders-horizontal"></i>
+        Post settings
+        <span class="wfe-settings-hint muted">slug, date, cover, tags…</span>
+      </summary>
+      <div class="wfe-settings-body">
+
+        <!-- Cover image -->
+        <fieldset class="wfe-fieldset">
+          <legend class="wfe-legend">Cover image</legend>
+          <p class="form-help">
+            Paste an image URL, or upload a file (saved as a data URL for local posts).
+          </p>
+          <div class="wfe-cover-row">
+            <input
+              class="input wfe-cover-url-input"
+              id="composer-cover"
+              name="cover"
+              type="text"
+              inputmode="url"
+              autocomplete="off"
+              placeholder="https://… or click Upload →"
+              aria-label="Cover image URL or uploaded data URL"
+            />
+            <input
+              type="file"
+              id="composer-cover-file"
+              class="sr-only"
+              accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+              tabindex="-1"
+              aria-hidden="true"
+            />
+            <button type="button" class="btn btn-secondary" data-cover-upload-trigger>
+              <i data-lucide="upload"></i> Upload
+            </button>
+            <button type="button" class="btn btn-ghost" data-cover-clear>
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="wfe-cover-preview" data-cover-preview hidden></div>
+        </fieldset>
+
+        <!-- Core metadata -->
+        <div class="wfe-settings-grid">
+          <div class="field">
+            <label for="composer-slug">Slug</label>
+            <input class="input" id="composer-slug" name="slug" type="text" />
+          </div>
+          <div class="field">
+            <label for="composer-date">Date</label>
+            <input class="input" id="composer-date" name="date" type="date" />
+          </div>
+          <div class="field wfe-span-2">
+            <label for="composer-description">Description</label>
+            <textarea
+              class="textarea"
+              id="composer-description"
+              name="description"
+              rows="2"
+            ></textarea>
+          </div>
+          <div class="field">
+            <label for="composer-tags">Tags</label>
+            <input
+              class="input"
+              id="composer-tags"
+              name="tags"
+              placeholder="comma-separated"
+            />
+          </div>
+          <div class="field">
+            <label for="composer-author">Author</label>
+            <input class="input" id="composer-author" name="author" />
+          </div>
+        </div>
+
+      </div>
+    </details>
+  </div>
+</form>

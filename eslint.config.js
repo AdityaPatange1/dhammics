@@ -26,6 +26,7 @@ export default [
         Event: 'readonly',
         URL: 'readonly',
         URLSearchParams: 'readonly',
+        DOMParser: 'readonly',
         FormData: 'readonly',
         Blob: 'readonly',
         FileReader: 'readonly',
